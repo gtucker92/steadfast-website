@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex, follow">
+<title>Sweep It Clean | Steadfast Cleaning Co.</title>
+
+<!-- Fonts: same load the rest of the site uses. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  /* Brand palette. */
+  :root {
+    --cream: #FBF8F3;
+    --cream-deep: #F3EDE3;
+    --purple-dark: #4A3566;
+    --purple: #6B4C8F;
+    --purple-mid: #7B4FBE;
+    --purple-light: #C4A8E8;
+    --green: #7BA05B;
+    --green-2: #8FB570;
+    --pink: #C89BC4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cream);
+    color: var(--purple-dark);
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px 16px 28px;
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--cream) 0%, var(--cream-deep) 100%);
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--purple);
+    margin: 0 0 6px;
+  }
+
+  .title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(30px, 7vw, 44px);
+    line-height: 1.05;
+    color: var(--purple-dark);
+    margin: 0 0 16px;
+    text-align: center;
+  }
+
+  /* The play area sits inside a thick purple rounded border. */
+  .frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5 / 6;
+    max-height: 72vh;
+    border: 10px solid var(--purple-dark);
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--cream);
+    box-shadow: 0 26px 60px -24px rgba(74, 53, 102, 0.6), 0 4px 14px -8px rgba(74, 53, 102, 0.3);
+    touch-action: none;
+  }
+
+  canvas#game {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: none;
+  }
+
+  /* On-canvas HUD. */
+  .hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    pointer-events: none;
+    font-weight: 500;
+    color: var(--purple-dark);
+  }
+
+  .hud .pill {
+    background: rgba(251, 248, 243, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    padding: 7px 15px;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(9px) saturate(1.1);
+    -webkit-backdrop-filter: blur(9px) saturate(1.1);
+    box-shadow: 0 6px 16px -9px rgba(74, 53, 102, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .hud .label {
+    color: var(--purple);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-right: 7px;
+  }
+
+  .hud .value { font-variant-numeric: tabular-nums; }
+
+  /* Combo badge: appears only while a multiplier is active. */
+  .hud .combo {
+    background: var(--purple-mid);
+    border-color: transparent;
+    color: var(--cream);
+    font-weight: 500;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .hud .combo.show {
+    opacity: 1;
+    transform: scale(1);
+    animation: comboPulse 0.5s ease infinite alternate;
+  }
+
+  @keyframes comboPulse {
+    from { box-shadow: 0 0 0 0 rgba(123, 79, 190, 0.0); }
+    to   { box-shadow: 0 0 0 6px rgba(123, 79, 190, 0.18); }
+  }
+
+  /* Timer warning during the final seconds. */
+  .hud .pill.warn {
+    color: var(--purple-mid);
+    border-color: rgba(123, 79, 190, 0.5);
+    animation: warnPulse 0.6s ease infinite alternate;
+  }
+
+  @keyframes warnPulse {
+    from { transform: scale(1); }
+    to   { transform: scale(1.12); }
+  }
+
+  /* Sound toggle sits quietly below the frame. */
+  .sound-toggle {
+    appearance: none;
+    cursor: pointer;
+    margin-top: 14px;
+    border: 1px solid rgba(74, 53, 102, 0.22);
+    background: rgba(251, 248, 243, 0.6);
+    color: var(--purple);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 7px 16px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .sound-toggle:hover { background: rgba(243, 237, 227, 0.9); color: var(--purple-dark); }
+  .sound-toggle svg { display: block; }
+
+  /* Start and end overlays. */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 28px;
+    background: rgba(251, 248, 243, 0.92);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.25s ease;
+  }
+
+  .overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .overlay .panel-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(26px, 6vw, 36px);
+    color: var(--purple-dark);
+    margin: 0 0 10px;
+  }
+
+  .overlay .panel-text {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--purple);
+    max-width: 320px;
+    margin: 0 0 22px;
+  }
+
+  .overlay .score-big {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(40px, 12vw, 64px);
+    line-height: 1;
+    color: var(--purple-mid);
+    margin: 4px 0 2px;
+  }
+
+  .overlay .score-cap {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 6px;
+  }
+
+  .overlay .best {
+    font-size: 13px;
+    color: var(--purple);
+    margin: 8px 0 22px;
+  }
+
+  .btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    color: var(--cream);
+    background: linear-gradient(135deg, #7B4FBE 0%, #6B4C8F 100%);
+    padding: 14px 36px;
+    border-radius: 999px;
+    box-shadow: 0 14px 26px -10px rgba(123, 79, 190, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    transition: transform 0.12s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn:hover { filter: brightness(1.07); box-shadow: 0 18px 30px -10px rgba(123, 79, 190, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+  .btn:active { transform: translateY(1px) scale(0.99); }
+
+  .hint {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--purple);
+    opacity: 0.8;
+    font-weight: 300;
+  }
+
+  footer {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--purple);
+    font-weight: 300;
+  }
+
+  footer .tagline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--purple-dark);
+    margin-bottom: 4px;
+  }
+
+  footer a {
+    color: var(--purple-mid);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(123, 79, 190, 0.35);
+  }
+
+  footer a:hover { color: var(--purple-dark); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">Steadfast Cleaning Co.</p>
+    <h1 class="title">Sweep It Clean</h1>
+
+    <div class="frame" id="frame">
+      <canvas id="game"></canvas>
+
+      <div class="hud" aria-hidden="true">
+        <div class="pill"><span class="label">Score</span><span class="value" id="hudScore">0</span></div>
+        <div class="pill combo" id="hudCombo">x2</div>
+        <div class="pill"><span class="label">Time</span><span class="value" id="hudTime">30</span></div>
+      </div>
+
+      <!-- Start screen. -->
+      <div class="overlay" id="startScreen">
+        <h2 class="panel-title">Ready to tidy up?</h2>
+        <p class="panel-text">You have 30 seconds. Sweep the broom across the floor to clear dust bunnies, muddy footprints, and cobwebs. Catch the green slime monster for big points, and grab a gold sparkle if one appears.</p>
+        <button class="btn" id="startBtn">Start sweeping</button>
+        <p class="hint">Move your mouse or drag your finger.</p>
+        <p class="hint" id="startBest" style="margin-top:6px;"></p>
+      </div>
+
+      <!-- End screen. -->
+      <div class="overlay hidden" id="endScreen">
+        <p class="score-cap" id="endVerdict">Spotless.</p>
+        <div class="score-big" id="endScore">0</div>
+        <p class="panel-text" id="endLine" style="margin-bottom:0;">pieces swept</p>
+        <p class="best" id="endBest">Your best: 0</p>
+        <button class="btn" id="replayBtn">Sweep again</button>
+      </div>
+    </div>
+
+    <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false">
+      <svg id="soundIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </svg>
+      <span id="soundLabel">Sound off</span>
+    </button>
+
+    <footer>
+      <div class="tagline">Generations of clean.</div>
+      <a href="https://steadfastcleanco.com" rel="noopener">steadfastcleanco.com</a>
+    </footer>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Honor reduced motion by thinning out particle counts.
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var canvas = document.getElementById("game");
+  var ctx = canvas.getContext("2d");
+  var frame = document.getElementById("frame");
+
+  var hudScore = document.getElementById("hudScore");
+  var hudTime = document.getElementById("hudTime");
+  var hudCombo = document.getElementById("hudCombo");
+  var soundToggle = document.getElementById("soundToggle");
+  var soundIcon = document.getElementById("soundIcon");
+  var soundLabel = document.getElementById("soundLabel");
+  var startScreen = document.getElementById("startScreen");
+  var endScreen = document.getElementById("endScreen");
+  var startBtn = document.getElementById("startBtn");
+  var replayBtn = document.getElementById("replayBtn");
+  var endVerdict = document.getElementById("endVerdict");
+  var endScore = document.getElementById("endScore");
+  var endLine = document.getElementById("endLine");
+  var endBest = document.getElementById("endBest");
+  var startBest = document.getElementById("startBest");
+
+  // Logical (CSS pixel) size of the canvas, set on resize.
+  var W = 0, H = 0, dpr = 1;
+
+  // Perspective geometry, recomputed on resize.
+  var PERSP = 2.6;
+  var MINF = 1 / (1 + PERSP);
+  var vpX = 0, vpY = 0;     // vanishing point (above the frame)
+  var frontY = 0, backY = 0;
+  var floorLeft = 0, floorRight = 0;
+
+  // Cached floor paints, rebuilt on resize so they are not recreated per frame.
+  var floorGrad = null, lightPool = null, vignette = null, horizonGlow = null;
+
+  // Game state.
+  var STATE_START = 0, STATE_PLAY = 1, STATE_END = 2;
+  var state = STATE_START;
+
+  var ROUND = 30;            // seconds
+  var timeLeft = ROUND;
+  var score = 0;
+  var best = 0;              // this visitor's best, persisted on their device
+  var elapsed = 0;
+
+  var items = [];
+  var debris = [];           // flung swept items
+  var flecks = [];           // poof particles
+  var floaters = [];         // "+N" text
+  var trail = [];            // broom motion trail points
+
+  var spawnClock = 0;
+  var bonusClock = 0;        // separate timer for the rare sparkle bonus
+
+  // Combo: quick consecutive sweeps build a multiplier that decays if you pause.
+  var COMBO_WINDOW = 1.5;
+  var comboStreak = 0;
+  var comboTimer = 0;
+  var comboMult = 1;
+
+  // Final-seconds finale.
+  var FINAL_AT = 5;
+  var finalAnnounced = false;
+  var banner = null;         // transient centered message {text, life}
+
+  // Broom, in CSS pixels.
+  var broom = {
+    x: 0, y: 0, px: 0, py: 0,
+    vx: 0, vy: 0, angle: 0,
+    active: false
+  };
+
+  // Item type table. The slime monster is the rare, high-value catch.
+  var TYPES = {
+    dust:      { value: 1, radius: 15, weight: 0.46 },
+    footprint: { value: 2, radius: 17, weight: 0.27 },
+    web:       { value: 3, radius: 16, weight: 0.15 },
+    slime:     { value: 5, radius: 18, weight: 0.12 },
+    // The sparkle bonus has weight 0: it is never picked by the normal spawner
+    // and is instead released on its own rare timer with a short lifespan.
+    sparkle:   { value: 8, radius: 15, weight: 0 }
+  };
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  // Depth maps to a perspective factor. 0 = front (near), 1 = back (far).
+  function depthFactor(d) { return 1 / (1 + d * PERSP); }
+
+  // Normalized frontness: 1 at the front edge, 0 at the back line.
+  function frontness(d) {
+    var f = depthFactor(d);
+    return (f - MINF) / (1 - MINF);
+  }
+
+  function mapY(d) {
+    var t = frontness(d);
+    return backY + (frontY - backY) * t;
+  }
+
+  // fx is a fraction across the floor width at the front edge.
+  function mapX(fx, d) {
+    var t = frontness(d);
+    var frontX = floorLeft + fx * (floorRight - floorLeft);
+    var widthFactor = lerp(0.34, 1.0, t);
+    return vpX + (frontX - vpX) * widthFactor;
+  }
+
+  function renderScale(d) { return lerp(0.5, 1.12, frontness(d)); }
+  function depthBrightness(d) { return lerp(0.72, 1.0, frontness(d)); }
+
+  // Overshoot ease for a satisfying spawn pop.
+  function easeOutBack(t) {
+    var c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+
+  function resize() {
+    var r = frame.getBoundingClientRect();
+    W = Math.max(1, r.width - 20);   // subtract the 10px border on each side
+    H = Math.max(1, r.height - 20);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Vanishing point sits above the top of the frame.
+    vpX = W / 2;
+    vpY = -0.30 * H;
+    backY = 0.12 * H;
+    frontY = 0.99 * H;
+    floorLeft = 0.02 * W;
+    floorRight = 0.98 * W;
+
+    // Base floor gradient: lighter toward the back.
+    floorGrad = ctx.createLinearGradient(0, backY, 0, frontY);
+    floorGrad.addColorStop(0, "#FFFEFB");
+    floorGrad.addColorStop(1, "#F1EADD");
+
+    // Soft warm light pool, as if a lamp lit the middle of the floor.
+    lightPool = ctx.createRadialGradient(W * 0.5, H * 0.52, 0, W * 0.5, H * 0.52, Math.max(W, H) * 0.72);
+    lightPool.addColorStop(0, "rgba(255, 253, 248, 0.55)");
+    lightPool.addColorStop(0.55, "rgba(255, 253, 248, 0.12)");
+    lightPool.addColorStop(1, "rgba(255, 253, 248, 0)");
+
+    // Glow where the floor meets the back wall.
+    horizonGlow = ctx.createLinearGradient(0, backY - H * 0.06, 0, backY + H * 0.16);
+    horizonGlow.addColorStop(0, "rgba(196, 168, 232, 0)");
+    horizonGlow.addColorStop(0.5, "rgba(196, 168, 232, 0.22)");
+    horizonGlow.addColorStop(1, "rgba(196, 168, 232, 0)");
+
+    // Vignette to settle the edges and focus the eye.
+    vignette = ctx.createRadialGradient(W * 0.5, H * 0.46, H * 0.22, W * 0.5, H * 0.52, H * 0.82);
+    vignette.addColorStop(0, "rgba(74, 53, 102, 0)");
+    vignette.addColorStop(1, "rgba(74, 53, 102, 0.15)");
+  }
+
+  // ---------- Sound (off by default, no libraries) ----------
+
+  var audioCtx = null;
+  var muted = true;
+  var lastWhoosh = 0;
+
+  function ensureAudio() {
+    var Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!audioCtx && Ctor) audioCtx = new Ctor();
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  function blip(freq, dur, type, vol) {
+    if (muted || !audioCtx) return;
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol || 0.12, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start(t);
+    o.stop(t + dur);
+  }
+
+  function whoosh() {
+    if (muted || !audioCtx) return;
+    var t = audioCtx.currentTime;
+    if (t - lastWhoosh < 0.07) return;
+    lastWhoosh = t;
+    var dur = 0.16;
+    var buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    var src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    var bp = audioCtx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(1300, t);
+    bp.frequency.exponentialRampToValueAtTime(450, t + dur);
+    var g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.10, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(audioCtx.destination);
+    src.start(t);
+    src.stop(t + dur);
+  }
+
+  function sparkleChime() {
+    // A quick ascending three-note shimmer for the slime and the bonus.
+    blip(740, 0.14, "triangle", 0.10);
+    setTimeout(function () { blip(990, 0.14, "triangle", 0.10); }, 60);
+    setTimeout(function () { blip(1320, 0.18, "triangle", 0.10); }, 120);
+  }
+
+  function setMuted(next) {
+    muted = next;
+    soundToggle.setAttribute("aria-pressed", String(!muted));
+    soundLabel.textContent = muted ? "Sound off" : "Sound on";
+    // Swap the icon between muted (with cross) and on (with waves).
+    soundIcon.innerHTML = muted
+      ? '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>'
+      : '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+  }
+
+  // ---------- Spawning ----------
+
+  function pickType() {
+    var r = Math.random();
+    var acc = 0;
+    for (var k in TYPES) {
+      acc += TYPES[k].weight;
+      if (r <= acc) return k;
+    }
+    return "dust";
+  }
+
+  function spawnItem() {
+    var kind = pickType();
+    var a = rand(0, Math.PI * 2);
+    items.push({
+      kind: kind,
+      fx: rand(0.08, 0.92),
+      d: rand(0.08, 0.94),
+      born: 0,
+      seed: rand(0, Math.PI * 2),
+      // Floor-space wander velocity. Only the slime monster actually roams.
+      vfx: Math.cos(a) * 0.17,
+      vd: Math.sin(a) * 0.13,
+      flip: a < Math.PI ? 1 : -1
+    });
+  }
+
+  function spawnSparkle() {
+    items.push({
+      kind: "sparkle",
+      fx: rand(0.14, 0.86),
+      d: rand(0.2, 0.85),
+      born: 0,
+      seed: rand(0, Math.PI * 2),
+      ttl: 3.0,   // disappears if not swept in time
+      vfx: 0, vd: 0, flip: 1
+    });
+  }
+
+  function difficulty() {
+    return clamp(elapsed / ROUND, 0, 1);
+  }
+
+  function spawnInterval() {
+    // Speeds up as the round goes on, then surges for the final-seconds rush.
+    if (timeLeft <= FINAL_AT) return 0.18;
+    return lerp(0.85, 0.36, difficulty());
+  }
+
+  function concurrentCap() {
+    if (timeLeft <= FINAL_AT) return 12;
+    return Math.round(lerp(5, 9, difficulty()));
+  }
+
+  // ---------- Sweep / fling ----------
+
+  function sweepItem(item, idx, contactX, contactY) {
+    var info = TYPES[item.kind];
+    var special = item.kind === "sparkle";
+
+    // Combo: sweeping again before the window lapses raises the multiplier.
+    if (comboTimer > 0) comboStreak++; else comboStreak = 1;
+    comboTimer = COMBO_WINDOW;
+    comboMult = Math.min(5, Math.floor((comboStreak - 1) / 2) + 1);
+
+    var gained = info.value * comboMult;
+    score += gained;
+    hudScore.textContent = score;
+
+    // Sound: a sweep whoosh plus a per-item note, with a shimmer for the
+    // slime monster and the sparkle bonus.
+    whoosh();
+    if (special || item.kind === "slime") sparkleChime();
+    else blip(360 + info.value * 90, 0.12, "triangle", 0.10);
+
+    // Fling direction: use the broom velocity, or push away from the
+    // broom center when the broom is nearly still.
+    var speed = Math.hypot(broom.vx, broom.vy);
+    var dirx, diry;
+    if (speed > 90) {
+      dirx = broom.vx / speed;
+      diry = broom.vy / speed;
+    } else {
+      var ax = contactX - broom.x;
+      var ay = contactY - broom.y;
+      var am = Math.hypot(ax, ay) || 1;
+      dirx = ax / am;
+      diry = ay / am;
+    }
+
+    var launch = clamp(speed * 1.05, 820, 2100);
+    debris.push({
+      x: contactX,
+      y: contactY,
+      vx: dirx * launch + rand(-60, 60),
+      vy: diry * launch + rand(-60, 60),
+      rot: rand(0, Math.PI * 2),
+      vr: rand(-14, 14),
+      scale: renderScale(item.d),
+      kind: item.kind,
+      life: 1,
+      seed: item.seed
+    });
+
+    // Poof of flecks at the contact point. Gold for the sparkle bonus,
+    // pink and green otherwise.
+    var count = REDUCED ? (special ? 8 : 5) : (special ? 26 : 16);
+    for (var i = 0; i < count; i++) {
+      var a = rand(0, Math.PI * 2);
+      var sp = rand(40, special ? 320 : 260);
+      flecks.push({
+        x: contactX,
+        y: contactY,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 40,
+        r: rand(2, 5),
+        color: special
+          ? (Math.random() < 0.5 ? "#F0C75E" : (Math.random() < 0.5 ? "#FFFFFF" : "#E8B84A"))
+          : (Math.random() < 0.5 ? "#C89BC4" : (Math.random() < 0.5 ? "#7BA05B" : "#8FB570")),
+        life: 1
+      });
+    }
+
+    floaters.push({
+      x: contactX,
+      y: contactY,
+      text: "+" + gained + (comboMult > 1 ? "  x" + comboMult : ""),
+      life: 1
+    });
+
+    items.splice(idx, 1);
+  }
+
+  function checkSweeps() {
+    if (!broom.active) return;
+    var broomR = 32;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      var sx = mapX(it.fx, it.d);
+      var sy = mapY(it.d);
+      var ir = TYPES[it.kind].radius * renderScale(it.d);
+      var dx = sx - broom.x;
+      var dy = sy - broom.y;
+      if (dx * dx + dy * dy < (broomR + ir) * (broomR + ir)) {
+        sweepItem(it, i, sx, sy);
+      }
+    }
+  }
+
+  // ---------- Update ----------
+
+  function update(dt) {
+    if (state === STATE_PLAY) {
+      elapsed += dt;
+      timeLeft = Math.max(0, ROUND - elapsed);
+      hudTime.textContent = Math.ceil(timeLeft);
+
+      spawnClock += dt;
+      if (spawnClock >= spawnInterval()) {
+        spawnClock = 0;
+        if (items.length < concurrentCap()) spawnItem();
+      }
+
+      // Rare sparkle bonus: at most one out at a time, only before the finale.
+      bonusClock += dt;
+      if (bonusClock >= 9 && timeLeft > FINAL_AT) {
+        bonusClock = 0;
+        var hasSparkle = false;
+        for (var s = 0; s < items.length; s++) {
+          if (items[s].kind === "sparkle") { hasSparkle = true; break; }
+        }
+        if (!hasSparkle) spawnSparkle();
+      }
+
+      for (var i = items.length - 1; i >= 0; i--) {
+        var m = items[i];
+        m.born += dt;
+        // The slime monster scurries around the floor and bounces off the edges.
+        if (m.kind === "slime") {
+          m.fx += m.vfx * dt;
+          m.d += m.vd * dt;
+          if (m.fx < 0.06) { m.fx = 0.06; m.vfx = Math.abs(m.vfx); }
+          if (m.fx > 0.94) { m.fx = 0.94; m.vfx = -Math.abs(m.vfx); }
+          if (m.d < 0.06) { m.d = 0.06; m.vd = Math.abs(m.vd); }
+          if (m.d > 0.95) { m.d = 0.95; m.vd = -Math.abs(m.vd); }
+          m.flip = m.vfx >= 0 ? 1 : -1;
+        }
+        // The sparkle bonus vanishes if it is not swept in time.
+        if (m.kind === "sparkle" && m.born >= m.ttl) items.splice(i, 1);
+      }
+
+      // Combo multiplier decays once the window lapses.
+      if (comboTimer > 0) {
+        comboTimer -= dt;
+        if (comboTimer <= 0) { comboStreak = 0; comboMult = 1; }
+      }
+      if (comboMult > 1) {
+        hudCombo.textContent = "x" + comboMult;
+        hudCombo.classList.add("show");
+      } else {
+        hudCombo.classList.remove("show");
+      }
+
+      // Final-seconds finale: warn the timer and announce the rush once.
+      if (timeLeft <= FINAL_AT) {
+        hudTime.parentNode.classList.add("warn");
+        if (!finalAnnounced) {
+          finalAnnounced = true;
+          banner = { text: "Final sweep!", life: 1.6 };
+        }
+      }
+
+      checkSweeps();
+
+      if (timeLeft <= 0) endRound();
+    }
+
+    // Broom velocity from frame to frame.
+    if (dt > 0) {
+      var nvx = (broom.x - broom.px) / dt;
+      var nvy = (broom.y - broom.py) / dt;
+      broom.vx = lerp(broom.vx, nvx, 0.5);
+      broom.vy = lerp(broom.vy, nvy, 0.5);
+    }
+    broom.px = broom.x;
+    broom.py = broom.y;
+    var sp = Math.hypot(broom.vx, broom.vy);
+    if (sp > 30) broom.angle = lerp(broom.angle, Math.atan2(broom.vy, broom.vx), 0.2);
+
+    // Sweep trail: drop fading points behind the broom while it moves.
+    if (broom.active && sp > 45) {
+      trail.push({ x: broom.x, y: broom.y + 16, life: 1 });
+      if (trail.length > 16) trail.shift();
+    }
+    for (var ti = trail.length - 1; ti >= 0; ti--) {
+      trail[ti].life -= dt * 3.2;
+      if (trail[ti].life <= 0) trail.splice(ti, 1);
+    }
+
+    if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+
+    // Debris physics.
+    for (var d = debris.length - 1; d >= 0; d--) {
+      var p = debris[d];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      // Light drag and a slow fade so the piece stays solid as it rockets
+      // clear of the frame instead of dissolving in place.
+      p.vx *= (1 - 0.35 * dt);
+      p.vy *= (1 - 0.35 * dt);
+      p.rot += p.vr * dt;
+      p.life -= dt * 0.7;
+      var off = p.x < -90 || p.x > W + 90 || p.y < -130 || p.y > H + 130;
+      if (p.life <= 0 || off) debris.splice(d, 1);
+    }
+
+    // Flecks.
+    for (var f = flecks.length - 1; f >= 0; f--) {
+      var fl = flecks[f];
+      fl.x += fl.vx * dt;
+      fl.y += fl.vy * dt;
+      fl.vy += 520 * dt;
+      fl.life -= dt * 1.6;
+      if (fl.life <= 0) flecks.splice(f, 1);
+    }
+
+    // Score floaters.
+    for (var t = floaters.length - 1; t >= 0; t--) {
+      var ft = floaters[t];
+      ft.y -= 46 * dt;
+      ft.life -= dt * 1.1;
+      if (ft.life <= 0) floaters.splice(t, 1);
+    }
+  }
+
+  // ---------- Render ----------
+
+  function drawFloor() {
+    var rows = 11, cols = 9;
+
+    // Back wall, slightly deeper so the floor reads as a plane meeting it.
+    ctx.fillStyle = "#E9E0D2";
+    ctx.fillRect(0, 0, W, backY);
+
+    // Floor base (also hides any anti-alias seams between tiles).
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, backY, W, H - backY);
+
+    // Baseboard shadow where the wall meets the floor.
+    ctx.fillStyle = "rgba(74, 53, 102, 0.07)";
+    ctx.fillRect(0, backY, W, 3);
+
+    // Checkerboard kitchen tiles in perspective.
+    var tileA = "#FAF5EC", tileB = "#E8DECE";
+    for (var i = 0; i < rows; i++) {
+      var d0 = i / rows, d1 = (i + 1) / rows;
+      var y0 = mapY(d0), y1 = mapY(d1);
+      for (var j = 0; j < cols; j++) {
+        var fx0 = j / cols, fx1 = (j + 1) / cols;
+        ctx.fillStyle = ((i + j) % 2 === 0) ? tileA : tileB;
+        ctx.beginPath();
+        ctx.moveTo(mapX(fx0, d0), y0);
+        ctx.lineTo(mapX(fx1, d0), y0);
+        ctx.lineTo(mapX(fx1, d1), y1);
+        ctx.lineTo(mapX(fx0, d1), y1);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Grout lines between the tiles.
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(120, 100, 140, 0.13)";
+    for (var ri = 0; ri <= rows; ri++) {
+      var d = ri / rows, gy = mapY(d);
+      ctx.beginPath();
+      ctx.moveTo(mapX(0, d), gy);
+      ctx.lineTo(mapX(1, d), gy);
+      ctx.stroke();
+    }
+    for (var cj = 0; cj <= cols; cj++) {
+      var fx = cj / cols;
+      ctx.beginPath();
+      ctx.moveTo(mapX(fx, 0), mapY(0));
+      ctx.lineTo(mapX(fx, 1), mapY(1));
+      ctx.stroke();
+    }
+
+    // Glow along the horizon, then a glossy light pool and a vignette so the
+    // tiles read as a polished, lit kitchen floor.
+    ctx.fillStyle = horizonGlow;
+    ctx.fillRect(0, backY - H * 0.06, W, H * 0.22);
+    ctx.fillStyle = lightPool;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function contactShadow(x, y, rx, alpha) {
+    // Soft radial falloff so the shadow reads as blurred, not a hard ellipse.
+    var g = ctx.createRadialGradient(x, y, 0, x, y, rx);
+    g.addColorStop(0, "rgba(74, 53, 102, " + (0.36 * alpha).toFixed(3) + ")");
+    g.addColorStop(0.7, "rgba(74, 53, 102, " + (0.14 * alpha).toFixed(3) + ")");
+    g.addColorStop(1, "rgba(74, 53, 102, 0)");
+    ctx.save();
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, rx * 0.44, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawDust(x, y, s, t) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.globalAlpha = t;
+
+    // Soft stray fuzz radiating out so the silhouette looks light and messy.
+    ctx.strokeStyle = "rgba(140, 134, 124, 0.8)";
+    ctx.lineWidth = 1.3;
+    ctx.lineCap = "round";
+    for (var i = 0; i < 18; i++) {
+      var a = (i / 18) * Math.PI * 2 + 0.25;
+      var r0 = 10 + (i % 3);
+      var r1 = 17 + (i % 4) * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0 * 0.82 - 1);
+      ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1 * 0.82 - 1);
+      ctx.stroke();
+    }
+
+    // Two floppy ears poking up (the bunny part).
+    ctx.fillStyle = "#A29C93";
+    ctx.beginPath();
+    ctx.ellipse(-6, -13, 3.1, 7.5, -0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(4, -14, 2.9, 8, 0.28, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Fluffy body built from overlapping puffs, shaded with a soft top-left light.
+    var bodyGrad = ctx.createRadialGradient(-4, -5, 2, 0, 1, 18);
+    bodyGrad.addColorStop(0, "#CAC4BB");
+    bodyGrad.addColorStop(1, "#A19B92");
+    var puffs = [[0,1,12],[-8,3,7.5],[8,2,7.5],[-4,-4,7],[5,-4,7],[0,7,7.5]];
+    ctx.fillStyle = bodyGrad;
+    for (var p = 0; p < puffs.length; p++) {
+      ctx.beginPath();
+      ctx.arc(puffs[p][0], puffs[p][1], puffs[p][2], 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Soft specular highlight.
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.beginPath();
+    ctx.arc(-4, -4, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tiny eyes and nose so it reads as a critter.
+    ctx.fillStyle = "#574F47";
+    ctx.beginPath(); ctx.arc(-3, 0, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, 0, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#9C857F";
+    ctx.beginPath(); ctx.arc(0.5, 4, 1.2, 0, Math.PI * 2); ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawFootprint(x, y, s, t) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.globalAlpha = t;
+    ctx.rotate(-0.14);
+
+    // A muddy shoe print: a faint smear, a front sole pad and a heel, with
+    // tread marks across both so it reads as tracked-in dirt.
+    ctx.fillStyle = "rgba(94, 68, 41, 0.22)";
+    ctx.beginPath();
+    ctx.ellipse(2, 3, 14, 11, 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#7A5A3C";
+    // Front sole pad (toe end).
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Heel.
+    ctx.beginPath();
+    ctx.ellipse(0.5, 9, 5.6, 5.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tread marks pressed into the mud.
+    ctx.strokeStyle = "#5E4429";
+    ctx.lineWidth = 1.3;
+    ctx.lineCap = "round";
+    for (var i = 0; i < 4; i++) {
+      var yy = -10 + i * 4;
+      ctx.beginPath();
+      ctx.moveTo(-6, yy);
+      ctx.lineTo(6, yy);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(-4, 8); ctx.lineTo(4, 8);
+    ctx.moveTo(-3.4, 10.6); ctx.lineTo(3.4, 10.6);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawSlime(x, y, s, t, item) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.globalAlpha = t;
+
+    var ph = item ? item.born * 7 : 0;
+    var face = item ? item.flip : 1;
+    var squish = 1 + Math.sin(ph) * 0.09;
+    var step = item ? Math.sin(ph) * 3 : 0;
+
+    // Little running feet that pump as it scurries.
+    ctx.fillStyle = "#5F7E45";
+    ctx.beginPath(); ctx.ellipse(-6 + step, 13, 4, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6 - step, 13, 4, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Gooey body with a drippy lower edge, shaded lighter toward the top.
+    var slimeGrad = ctx.createRadialGradient(-2, -7, 2, 0, 0, 19);
+    slimeGrad.addColorStop(0, "#A4C980");
+    slimeGrad.addColorStop(1, "#688D46");
+    ctx.fillStyle = slimeGrad;
+    ctx.beginPath();
+    ctx.moveTo(-13, 4);
+    ctx.bezierCurveTo(-15, -13 * squish, 15, -13 * squish, 13, 4);
+    ctx.bezierCurveTo(13, 11, 9, 12, 7, 9);
+    ctx.bezierCurveTo(5, 13, 1, 13, -1, 9);
+    ctx.bezierCurveTo(-3, 13, -8, 13, -8, 8);
+    ctx.bezierCurveTo(-11, 11, -13, 9, -13, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Lighter sheen on top.
+    ctx.fillStyle = "#8FB570";
+    ctx.beginPath();
+    ctx.ellipse(-3, -4, 6, 5, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Googly eyes whose pupils lead the direction of travel.
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(-4, -2, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -2, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#36461F";
+    ctx.beginPath(); ctx.arc(-4 + face * 1.1, -1.5, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4 + face * 1.1, -1.5, 1.6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawWeb(x, y, s, t) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+    ctx.globalAlpha = t;
+    ctx.rotate(0.2);
+
+    // A cobweb: radial spokes plus sagging concentric strands. Dusty
+    // purple-gray so it reads as something to sweep up on the light floor.
+    var spokes = 8;
+    var R = 16;
+    ctx.strokeStyle = "rgba(106, 96, 120, 0.7)";
+    ctx.lineWidth = 1;
+    ctx.lineCap = "round";
+
+    // Radial spokes from the center.
+    for (var i = 0; i < spokes; i++) {
+      var a = (i / spokes) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+      ctx.stroke();
+    }
+
+    // Concentric strands that sag inward between the spokes.
+    var rings = [5, 9.5, 14];
+    for (var r = 0; r < rings.length; r++) {
+      var rad = rings[r];
+      ctx.beginPath();
+      for (var j = 0; j <= spokes; j++) {
+        var a2 = (j / spokes) * Math.PI * 2;
+        var px = Math.cos(a2) * rad, py = Math.sin(a2) * rad;
+        if (j === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          var aMid = ((j - 0.5) / spokes) * Math.PI * 2;
+          var sag = rad * 0.8;
+          ctx.quadraticCurveTo(Math.cos(aMid) * sag, Math.sin(aMid) * sag, px, py);
+        }
+      }
+      ctx.stroke();
+    }
+
+    // Small dark anchor at the hub.
+    ctx.fillStyle = "rgba(74, 53, 102, 0.55)";
+    ctx.beginPath();
+    ctx.arc(0, 0, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawSparkle(x, y, s, t, item) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+
+    var ph = item ? item.born * 4 : 0;
+    var pulse = 1 + Math.sin(ph) * 0.12;
+    var a = t;
+    // Blink faster as it is about to expire.
+    if (item && item.ttl && (item.ttl - item.born) < 1) {
+      a *= (0.4 + 0.6 * Math.abs(Math.sin(item.born * 12)));
+    }
+    ctx.globalAlpha = a;
+    ctx.rotate(ph * 0.15);
+
+    // Soft golden glow.
+    ctx.fillStyle = "rgba(240, 199, 94, 0.30)";
+    ctx.beginPath();
+    ctx.arc(0, 0, 13 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Four-point sparkle, gold with a white core.
+    function star(scale, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      for (var i = 0; i < 8; i++) {
+        var ang = i * Math.PI / 4;
+        var rad = (i % 2 === 0) ? 13 * scale : 3.4 * scale;
+        var px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+    star(pulse, "#F0C75E");
+    star(pulse * 0.6, "#FFFFFF");
+
+    ctx.restore();
+  }
+
+  function drawItemShape(kind, x, y, s, t, item) {
+    if (kind === "dust") drawDust(x, y, s, t);
+    else if (kind === "footprint") drawFootprint(x, y, s, t);
+    else if (kind === "slime") drawSlime(x, y, s, t, item);
+    else if (kind === "sparkle") drawSparkle(x, y, s, t, item);
+    else drawWeb(x, y, s, t);
+  }
+
+  function drawBroom() {
+    if (!broom.active) return;
+    var x = broom.x, y = broom.y;
+
+    // Contact shadow under the broom head.
+    contactShadow(x, y + 18, 26, 0.5);
+
+    ctx.save();
+    ctx.translate(x, y);
+    // Tilt the broom slightly toward its motion.
+    var sp = Math.hypot(broom.vx, broom.vy);
+    var tilt = clamp((broom.angle) * 0.0, -0.3, 0.3);
+    ctx.rotate(tilt);
+
+    // Handle.
+    ctx.strokeStyle = "#6B4C8F";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(8, -52);
+    ctx.lineTo(-2, 6);
+    ctx.stroke();
+
+    // Small green leaf on the handle.
+    ctx.save();
+    ctx.translate(8, -40);
+    ctx.rotate(-0.5);
+    ctx.fillStyle = "#7BA05B";
+    ctx.beginPath();
+    ctx.ellipse(6, 0, 7, 3.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#5F7E45";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(12, 0);
+    ctx.stroke();
+    ctx.restore();
+
+    // Bristle binding.
+    ctx.fillStyle = "#4A3566";
+    ctx.beginPath();
+    ctx.roundRect(-10, 2, 16, 9, 3);
+    ctx.fill();
+
+    // Flared bristles with a soft vertical sheen.
+    var bristleGrad = ctx.createLinearGradient(0, 10, 0, 30);
+    bristleGrad.addColorStop(0, "#8A5FCB");
+    bristleGrad.addColorStop(1, "#6B4C8F");
+    ctx.fillStyle = bristleGrad;
+    ctx.beginPath();
+    ctx.moveTo(-10, 10);
+    ctx.lineTo(6, 10);
+    ctx.lineTo(20, 30);
+    ctx.lineTo(-24, 30);
+    ctx.closePath();
+    ctx.fill();
+    // Bristle strands.
+    ctx.strokeStyle = "#C4A8E8";
+    ctx.lineWidth = 1.4;
+    for (var i = 0; i < 9; i++) {
+      var tt = i / 8;
+      var topx = lerp(-9, 5, tt);
+      var botx = lerp(-22, 18, tt);
+      ctx.beginPath();
+      ctx.moveTo(topx, 11);
+      ctx.lineTo(botx, 29);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawFloor();
+
+    // Draw items back to front so nearer ones overlap.
+    var sorted = items.slice().sort(function (a, b) { return b.d - a.d; });
+    for (var i = 0; i < sorted.length; i++) {
+      var it = sorted[i];
+      var x = mapX(it.fx, it.d);
+      var y = mapY(it.d);
+      // Quick scale-in pop when the item first appears.
+      var appear = easeOutBack(clamp(it.born / 0.28, 0, 1));
+      var s = renderScale(it.d) * appear;
+      var bright = depthBrightness(it.d);
+      // Gentle idle bob.
+      var bob = Math.sin(it.born * 3 + it.seed) * 1.2;
+      contactShadow(x, y + 13 * s, TYPES[it.kind].radius * s * 1.05, 0.30 * bright);
+      drawItemShape(it.kind, x, y + bob, s, bright, it);
+    }
+
+    // Flung debris.
+    for (var d = 0; d < debris.length; d++) {
+      var p = debris[d];
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      drawItemShape(p.kind, 0, 0, p.scale, clamp(p.life, 0, 1));
+      ctx.restore();
+    }
+
+    // Poof flecks.
+    for (var f = 0; f < flecks.length; f++) {
+      var fl = flecks[f];
+      ctx.globalAlpha = clamp(fl.life, 0, 1);
+      ctx.fillStyle = fl.color;
+      ctx.beginPath();
+      ctx.arc(fl.x, fl.y, fl.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Score floaters.
+    ctx.textAlign = "center";
+    ctx.font = "600 20px 'DM Sans', sans-serif";
+    for (var t = 0; t < floaters.length; t++) {
+      var ft = floaters[t];
+      ctx.globalAlpha = clamp(ft.life, 0, 1);
+      ctx.fillStyle = "#6B4C8F";
+      ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.globalAlpha = 1;
+
+    // Sweep trail beneath the broom.
+    if (trail.length > 1) {
+      ctx.lineCap = "round";
+      for (var k = 1; k < trail.length; k++) {
+        var p0 = trail[k - 1], p1 = trail[k];
+        var lf = p1.life;
+        ctx.strokeStyle = "rgba(196, 168, 232, " + (0.5 * lf).toFixed(3) + ")";
+        ctx.lineWidth = 14 * lf;
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+      }
+    }
+
+    drawBroom();
+
+    // Finale banner, drawn on top.
+    if (banner) {
+      ctx.globalAlpha = clamp(banner.life, 0, 1);
+      ctx.fillStyle = "#7B4FBE";
+      ctx.textAlign = "center";
+      ctx.font = "700 32px 'Playfair Display', serif";
+      ctx.fillText(banner.text, W / 2, H * 0.34);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ---------- Loop ----------
+
+  var lastTs = 0;
+  var raf = null;
+
+  function loop(ts) {
+    var now = ts / 1000;
+    var dt = lastTs ? now - lastTs : 0;
+    lastTs = now;
+    if (dt > 0.05) dt = 0.05;   // clamp big gaps (tab switches)
+    update(dt);
+    render();
+    raf = requestAnimationFrame(loop);
+  }
+
+  // ---------- Round flow ----------
+
+  function startRound() {
+    score = 0;
+    elapsed = 0;
+    timeLeft = ROUND;
+    spawnClock = 0;
+    bonusClock = 0;
+    comboStreak = 0;
+    comboTimer = 0;
+    comboMult = 1;
+    finalAnnounced = false;
+    banner = null;
+    items.length = 0;
+    debris.length = 0;
+    flecks.length = 0;
+    floaters.length = 0;
+    trail.length = 0;
+    hudScore.textContent = "0";
+    hudTime.textContent = "30";
+    hudCombo.classList.remove("show");
+    hudTime.parentNode.classList.remove("warn");
+    ensureAudio();
+    state = STATE_PLAY;
+    startScreen.classList.add("hidden");
+    endScreen.classList.add("hidden");
+  }
+
+  function verdictFor(s) {
+    if (s >= 40) return "Immaculate.";
+    if (s >= 25) return "Spotless.";
+    if (s >= 12) return "Nicely done.";
+    return "Good start.";
+  }
+
+  // Personal best, stored on this device only. Wrapped so a blocked or
+  // unavailable localStorage (private mode, sandboxed frame) never breaks the game.
+  var BEST_KEY = "steadfast-sweep-best";
+
+  function loadBest() {
+    try {
+      var n = parseInt(window.localStorage.getItem(BEST_KEY), 10);
+      return (isFinite(n) && n > 0) ? n : 0;
+    } catch (e) { return 0; }
+  }
+
+  function saveBest(v) {
+    try { window.localStorage.setItem(BEST_KEY, String(v)); } catch (e) {}
+  }
+
+  function refreshBestLine() {
+    startBest.textContent = best > 0 ? ("Your best: " + best) : "";
+  }
+
+  function endRound() {
+    state = STATE_END;
+    var prevBest = best;
+    var beatenBest = score > best;
+    if (beatenBest) { best = score; saveBest(best); }
+    // Beating a real previous best earns the top praise, whatever the raw
+    // score. The first score you ever set still uses the normal score tiers.
+    var newRecord = beatenBest && prevBest > 0;
+    endVerdict.textContent = newRecord ? "Immaculate." : verdictFor(score);
+    endScore.textContent = score;
+    endLine.textContent = (score === 1 ? "piece swept" : "pieces swept");
+    endBest.textContent = beatenBest ? ("New personal best: " + best) : ("Your best: " + best);
+    refreshBestLine();
+    endScreen.classList.remove("hidden");
+  }
+
+  // ---------- Input ----------
+
+  function pointerPos(e) {
+    var r = canvas.getBoundingClientRect();
+    var x = (e.clientX - r.left) * (W / r.width);
+    var y = (e.clientY - r.top) * (H / r.height);
+    // On touch, lift the broom head above the finger so it stays visible.
+    if (e.pointerType === "touch") y -= 30;
+    return { x: x, y: y };
+  }
+
+  function onMove(e) {
+    var p = pointerPos(e);
+    broom.x = p.x;
+    broom.y = p.y;
+    broom.active = true;
+  }
+
+  canvas.addEventListener("pointermove", onMove);
+  canvas.addEventListener("pointerdown", function (e) {
+    onMove(e);
+    if (canvas.setPointerCapture) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  });
+  canvas.addEventListener("pointerenter", function (e) { broom.active = true; });
+  canvas.addEventListener("pointerleave", function (e) {
+    // Keep the broom visible on desktop hover-out only briefly; just stop velocity.
+    broom.vx = 0; broom.vy = 0;
+  });
+
+  startBtn.addEventListener("click", startRound);
+  replayBtn.addEventListener("click", startRound);
+
+  soundToggle.addEventListener("click", function () {
+    ensureAudio();
+    setMuted(!muted);
+    if (!muted) blip(880, 0.12, "triangle", 0.12);   // little confirmation tone
+  });
+
+  window.addEventListener("resize", resize);
+  if (window.ResizeObserver) {
+    new ResizeObserver(resize).observe(frame);
+  }
+
+  // ---------- Boot ----------
+
+  resize();
+  setMuted(true);   // start quiet, matching the default
+  best = loadBest();
+  refreshBestLine();
+  broom.x = W / 2;
+  broom.y = H * 0.7;
+  broom.px = broom.x;
+  broom.py = broom.y;
+  raf = requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

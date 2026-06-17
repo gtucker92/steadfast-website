@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steadfast Cleaning Co. | Tampa Bay Residential Cleaning</title>
+  <meta name="description" content="Reliable residential cleaning across Tampa Bay. Recurring, deep, and move-out service for South Tampa, Westchase, and Carrollwood. Licensed, bonded, and insured.">
+  <link rel="canonical" href="https://steadfastcleanco.com/">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://steadfastcleanco.com/">
+  <meta property="og:title" content="Steadfast Cleaning Co. | Tampa Bay Residential Cleaning">
+  <meta property="og:description" content="Reliable residential cleaning across Tampa Bay. Recurring, deep, and move-out service for South Tampa, Westchase, and Carrollwood. Licensed, bonded, and insured.">
+  <meta property="og:image" content="https://steadfastcleanco.com/images/og-share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Steadfast Cleaning Co. Generations of Clean.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Steadfast Cleaning Co. | Tampa Bay Residential Cleaning">
+  <meta name="twitter:description" content="Reliable residential cleaning across Tampa Bay. Recurring, deep, and move-out service for South Tampa, Westchase, and Carrollwood. Licensed, bonded, and insured.">
+  <meta name="twitter:image" content="https://steadfastcleanco.com/images/og-share.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body { overflow: hidden; background: #2D1B69; }
+
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #2D1B69;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #bubble-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -60px;
+      border-radius: 50%;
+      background: rgba(196, 168, 232, var(--opacity));
+      width: var(--size);
+      height: var(--size);
+      animation: bubbleRise var(--dur) ease-in var(--delay) forwards;
+    }
+
+    @keyframes bubbleRise {
+      0% { transform: translateY(0) translateX(0); opacity: 1; }
+      50% { transform: translateY(-40vh) translateX(var(--sway)); opacity: 0.8; }
+      100% { transform: translateY(-120vh) translateX(0); opacity: 0; }
+    }
+
+    .spray-scene {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .bottle-wrap {
+      animation: bottleSpin 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform-style: preserve-3d;
+      perspective: 800px;
+    }
+
+    @keyframes bottleSpin {
+      0% { transform: rotateY(-180deg) scale(0.3); opacity: 0; }
+      60% { transform: rotateY(20deg) scale(1.05); opacity: 1; }
+      80% { transform: rotateY(-10deg) scale(0.98); }
+      100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+    }
+
+    .bottle-svg {
+      width: 240px;
+      height: 360px;
+      filter: drop-shadow(0 30px 60px rgba(0,0,0,0.4));
+      animation: bottleSquirt 0.4s ease 1.4s forwards;
+    }
+
+    @keyframes bottleSquirt {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(-25deg) translateX(10px); }
+      60% { transform: rotate(-20deg) translateX(8px); }
+      100% { transform: rotate(-20deg) translateX(8px); }
+    }
+
+    .spray-particles {
+      position: absolute;
+      top: 128px;
+      left: 0;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      animation: showSpray 0.1s ease 1.5s forwards;
+    }
+
+    @keyframes showSpray { to { opacity: 1; } }
+
+    .spray-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: rgba(196, 168, 232, 0.9);
+      border-radius: 50%;
+      animation: sprayFly var(--dur) ease var(--delay) forwards;
+    }
+
+    @keyframes sprayFly {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+    }
+
+    .brand-text {
+      text-align: center;
+      opacity: 0;
+      animation: fadeInBrand 0.6s ease 1.2s forwards;
+    }
+
+    @keyframes fadeInBrand {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-name-main {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 7px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .brand-sub {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 26px;
+      font-weight: 500;
+      color: #7B4FBE;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .brand-tag {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 19px;
+      color: #C4A8E8;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    /* Exit: simple fade out, no circular clipping */
+    @keyframes introExit {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    #intro.exit {
+      animation: introExit 0.4s ease forwards;
+      border-radius: 0 !important;
+      clip-path: none !important;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    #main-content {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #main-content.visible { opacity: 1; }
+  </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css?v=3">
+  <style>
+    :root {
+      --purple-dark: #2D1B69;
+      --purple-mid: #7B4FBE;
+      --purple-light: #C4A8E8;
+      --purple-pale: #F5F3FF;
+      --white: #FFFFFF;
+      --off-white: #FAFAFA;
+      --text-dark: #1A1A2E;
+      --text-mid: #4A4A6A;
+      --text-light: #8888AA;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(45,27,105,0.08);
+      padding: 0 40px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-mid);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+
+    .nav-cta {
+      background: var(--purple-mid);
+      color: white !important;
+      padding: 11px 24px;
+      border-radius: 6px;
+      font-weight: 500 !important;
+      transition: background 0.2s !important;
+    }
+
+    .nav-cta:hover { background: var(--purple-dark) !important; color: white !important; }
+
+    /* HAMBURGER NAV */
+
+    .nav-burger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .nav-burger:hover { background: rgba(45,27,105,0.06); }
+
+    .nav-burger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--purple-dark);
+      border-radius: 2px;
+      transition: transform 0.25s, opacity 0.25s;
+      transform-origin: center;
+    }
+
+    .nav-dropdown {
+      display: none;
+      position: fixed;
+      top: 80px;
+      left: 0; right: 0;
+      z-index: 99;
+      background: white;
+      border-bottom: 1px solid rgba(45,27,105,0.1);
+      box-shadow: 0 8px 32px rgba(45,27,105,0.1);
+      padding: 0 24px 20px;
+    }
+
+    /* HERO */
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: 0;
+    }
+
+    .hero-left {
+      background: var(--purple-pale);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 60px 80px 80px;
+    }
+
+    .hero-eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--purple-mid);
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 58px;
+      line-height: 1.1;
+      color: var(--purple-dark);
+      margin-bottom: 24px;
+      font-weight: 700;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--purple-mid);
+    }
+
+    .hero-subtitle {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text-mid);
+      max-width: 440px;
+      margin-bottom: 12px;
+    }
+
+    .hero-bilingual {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--text-light);
+      max-width: 440px;
+      margin-bottom: 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--purple-dark);
+      color: white;
+      padding: 15px 32px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--purple-mid);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--purple-dark);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      transition: gap 0.2s;
+    }
+
+    .btn-secondary:hover { gap: 12px; }
+
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+      background: var(--purple-dark);
+    }
+
+    .hero-right-inner {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px;
+    }
+
+    .hero-image-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(45,27,105,1) 0%, rgba(123,79,190,0.85) 100%);
+      z-index: 1;
+    }
+
+    .hero-bg-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.5) 40px,
+        rgba(255,255,255,0.5) 41px
+      );
+      z-index: 0;
+    }
+
+    /* TRUST BAR */
+
+    .trust-bar {
+      background: var(--purple-dark);
+      padding: 22px 40px;
+    }
+
+    .trust-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+    }
+
+    .trust-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .trust-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .trust-label {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* SERVICES PREVIEW */
+
+    .section {
+      padding: 100px 80px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--purple-mid);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .section-subtitle {
+      font-size: 17px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 56px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .service-card {
+      border: 1px solid rgba(45,27,105,0.1);
+      border-radius: 16px;
+      padding: 36px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card:hover {
+      border-color: var(--purple-light);
+      box-shadow: 0 12px 40px rgba(45,27,105,0.08);
+      transform: translateY(-3px);
+    }
+
+    .service-card.featured {
+      background: var(--purple-dark);
+      border-color: transparent;
+    }
+
+    .service-card.featured .service-icon-wrap { background: rgba(255,255,255,0.12); }
+
+    .service-card.featured .service-name { color: white; }
+
+    .service-card.featured .service-desc { color: rgba(255,255,255,0.7); }
+
+    .service-card.featured .service-badge { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+    .service-icon-wrap {
+      width: 52px;
+      height: 52px;
+      background: var(--purple-pale);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .service-icon-wrap svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--purple-mid);
+    }
+
+    .service-card.featured .service-icon-wrap svg {
+      stroke: rgba(255,255,255,0.9);
+    }
+
+    .service-badge {
+      display: inline-block;
+      background: var(--purple-pale);
+      color: var(--purple-mid);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .service-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--purple-dark);
+      margin-bottom: 12px;
+    }
+
+    .service-desc {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-mid);
+    }
+
+    /* WHY US */
+
+    .why-section {
+      background: var(--purple-pale);
+      padding: 100px 80px;
+    }
+
+    .why-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .why-visual {
+      position: relative;
+    }
+
+    .why-card-stack {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .why-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 20px rgba(45,27,105,0.06);
+    }
+
+    .why-card-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .why-card-label {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.4;
+    }
+
+    .why-card.accent {
+      background: var(--purple-mid);
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .why-card.accent .why-card-number { color: white; }
+
+    .why-card.accent .why-card-label { color: rgba(255,255,255,0.8); }
+
+    .why-content { }
+
+    .why-points {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .why-point {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .why-point-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--purple-dark);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .why-point-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+    }
+
+    .why-point-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--purple-dark);
+      margin-bottom: 4px;
+    }
+
+    .why-point-text {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.6;
+    }
+
+    /* AREAS */
+
+    .areas-section {
+      padding: 80px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .areas-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 40px;
+    }
+
+    .area-chip {
+      background: var(--purple-pale);
+      color: var(--purple-dark);
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid rgba(45,27,105,0.1);
+    }
+
+    /* CTA BANNER */
+
+    .btn-white:hover {
+      background: var(--purple-light);
+      color: var(--purple-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline-white {
+      border: 2px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 13px 30px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-outline-white:hover {
+      border-color: white;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* FOOTER */
+
+    .footer-contact-item a:hover { color: var(--purple-light); }
+
+    .footer-col a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--purple-light); }
+
+    .footer-bottom {
+      max-width: 1240px;
+      margin: 32px auto 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .hero-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 16px;
+      margin-bottom: 24px;
+      color: var(--text-mid);
+      transition: color 0.2s;
+    }
+
+    .hero-rating:hover { color: var(--purple-dark); }
+
+    .meet-owner-section {
+      background: var(--purple-pale);
+      padding: 80px 80px;
+    }
+
+    .meet-owner-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .meet-owner-photo img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(45, 27, 105, 0.12);
+    }
+
+    .meet-owner-eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--purple-mid);
+      margin-bottom: 16px;
+    }
+
+    .meet-owner-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      line-height: 1.15;
+      margin: 0 0 24px 0;
+    }
+
+    .meet-owner-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-dark);
+      margin: 0 0 20px 0;
+    }
+
+    .meet-owner-signature {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--purple-mid);
+      margin: 0;
+    }
+
+    /* HERO TRUST PILL (U4) */
+
+    .hero-trust-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--purple-mid);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 40px;
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    /* SERVICE PRICE (U2) */
+
+    .service-price {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--purple-mid);
+      margin-top: 12px;
+    }
+
+    .service-card.featured .service-price { color: rgba(255,255,255,0.85); }
+
+    /* GUARANTEE STRIP (U3) */
+
+    .guarantee-strip {
+      background: white;
+      padding: 24px 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .guarantee-inner {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--purple-pale);
+      border: 1px solid rgba(45,27,105,0.12);
+      border-radius: 16px;
+      padding: 24px 36px;
+      box-shadow: 0 4px 20px rgba(45,27,105,0.07);
+      max-width: 620px;
+      width: 100%;
+    }
+
+    .guarantee-icon {
+      width: 52px; height: 52px;
+      background: var(--purple-dark);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .guarantee-icon svg { width: 24px; height: 24px; stroke: white; fill: none; }
+
+    .guarantee-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      margin-bottom: 4px;
+    }
+
+    .guarantee-sub { font-size: 14px; color: var(--text-mid); line-height: 1.5; }
+
+    /* LOCAL VS CORPORATE SECTION (U6) */
+
+    .local-section {
+      background: var(--purple-dark);
+      padding: 80px;
+    }
+
+    .local-inner { max-width: 1240px; margin: 0 auto; }
+
+    .local-header { text-align: center; margin-bottom: 48px; }
+
+    .local-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--purple-light); margin-bottom: 12px; }
+
+    .local-title { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 700; color: white; line-height: 1.2; margin-bottom: 10px; }
+
+    .local-sub { font-size: 16px; color: rgba(255,255,255,0.7); }
+
+    .local-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    .local-card {
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 36px 32px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .local-card:hover { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.04); }
+
+    .local-card-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .local-card-icon svg { width: 22px; height: 22px; stroke: var(--purple-light); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .local-card-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: white; margin-bottom: 12px; }
+
+    .local-card-text { font-size: 15px; color: rgba(255,255,255,0.72); line-height: 1.65; }
+
+    /* OFFER BANNER (U7) */
+
+    .offer-banner {
+      background: #E5DEF2;
+      border-bottom: 1px solid rgba(45,27,105,0.1);
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      position: sticky;
+      top: 80px;
+      z-index: 99;
+      font-size: 14px;
+      color: var(--purple-dark);
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
+      max-height: 80px;
+    }
+
+    .offer-banner.dismissed { max-height: 0; padding: 0; opacity: 0; pointer-events: none; }
+
+    .offer-banner-text { flex: 1; text-align: center; font-weight: 500; }
+
+    .offer-banner-text strong { font-weight: 700; }
+
+    .offer-claim {
+      background: var(--purple-dark);
+      color: white;
+      padding: 5px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .offer-claim:hover { background: var(--purple-mid); color: white; }
+
+    .offer-dismiss {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mid);
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+      position: absolute;
+      right: 16px;
+    }
+
+    .offer-dismiss:hover { color: var(--purple-dark); }
+
+    /* ANIMATIONS */
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow { animation: fadeUp 0.6s ease 0.1s both; }
+
+    .hero-title { animation: fadeUp 0.6s ease 0.2s both; }
+
+    .hero-subtitle { animation: fadeUp 0.6s ease 0.3s both; }
+
+    .hero-bilingual { animation: fadeUp 0.6s ease 0.35s both; }
+
+    .hero-actions { animation: fadeUp 0.6s ease 0.4s both; }
+
+    /* MOBILE RESPONSIVE */
+
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+      .meet-owner-section { padding: 60px 24px; }
+      .meet-owner-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        max-width: 480px;
+      }
+      .meet-owner-photo { max-width: 320px; margin: 0 auto; }
+      .meet-owner-heading { font-size: 30px; }
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        padding: 0 20px;
+        height: 70px;
+      }
+      .nav-dropdown { top: 70px; }
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .hero-left {
+        padding: 90px 24px 48px;
+      }
+      .hero-title { font-size: 38px; }
+      .hero-right {
+        background: var(--purple-dark);
+        min-height: auto;
+      }
+      .hero-right-inner {
+        position: relative;
+        inset: auto;
+        padding: 48px 24px;
+        justify-content: flex-start;
+      }
+      .trust-bar { padding: 20px 24px; }
+      .trust-bar-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .section { padding: 60px 24px; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .section-title { font-size: 30px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .why-section { padding: 60px 24px; }
+      .why-inner { grid-template-columns: 1fr; gap: 40px; }
+      .why-visual { display: none; }
+      .areas-section { padding: 60px 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+      .guarantee-strip { padding: 20px 20px; }
+      .guarantee-inner { flex-direction: column; text-align: center; padding: 20px; }
+      .local-section { padding: 60px 24px; }
+      .local-cards { grid-template-columns: 1fr; gap: 16px; }
+      .local-title { font-size: 28px; }
+      .offer-banner { padding: 10px 48px 10px 16px; top: 70px; }
+      .offer-banner-text { font-size: 13px; }
+      .hero-trust-pill { display: inline-flex; }
+      .page-hero { padding: 120px 24px 60px; }
+      .page-title { font-size: 36px; }
+      .services-main { padding: 40px 24px; }
+      .pricing-intro { flex-direction: column; }
+      .addons-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-row { grid-template-columns: 1fr; gap: 8px; }
+      .pricing-amount { text-align: left; }
+      .pricing-amount-sub { text-align: left; }
+      .contact-layout { grid-template-columns: 1fr; }
+      .contact-left { padding: 100px 24px 48px; }
+      .contact-title { font-size: 36px; }
+      .contact-right { padding: 40px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* === HOW IT WORKS: hero right panel === */
+
+    .hiw-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--purple-light);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hiw-eyebrow::before {
+      content: '';
+      width: 24px; height: 1px;
+      background: var(--purple-light);
+      opacity: 0.5;
+    }
+
+    .hiw-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      line-height: 1.1;
+      color: white;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .hiw-title em {
+      font-style: italic;
+      color: var(--purple-light);
+      font-weight: 600;
+    }
+
+    .hiw-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin-bottom: 36px;
+      max-width: 420px;
+    }
+
+    .hiw-steps {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .hiw-steps::before {
+      content: '';
+      position: absolute;
+      left: 27px;
+      top: 30px;
+      bottom: 30px;
+      width: 1px;
+      background: linear-gradient(180deg,
+        rgba(196, 168, 232, 0.3) 0%,
+        rgba(196, 168, 232, 0.5) 50%,
+        rgba(196, 168, 232, 0.3) 100%);
+    }
+
+    .hiw-step {
+      display: flex;
+      gap: 22px;
+      padding: 18px 0;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .hiw-step-number {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      background: var(--purple-dark);
+      border: 1.5px solid rgba(196, 168, 232, 0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--purple-light);
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+
+    .hiw-step:hover .hiw-step-number {
+      background: var(--purple-light);
+      color: var(--purple-dark);
+      border-color: var(--purple-light);
+      transform: scale(1.05);
+    }
+
+    .hiw-step-content { padding-top: 6px; flex: 1; }
+
+    .hiw-step-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .hiw-step-title em {
+      font-style: italic;
+      color: var(--purple-light);
+      font-weight: 600;
+    }
+
+    .hiw-step-body {
+      font-size: 14px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.55;
+    }
+
+    .hiw-footer {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(196, 168, 232, 0.18);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .hiw-footer-icon {
+      width: 18px; height: 18px;
+      color: var(--purple-light);
+      flex-shrink: 0;
+    }
+
+    .hiw-footer strong { color: white; font-weight: 600; }
+
+    .hiw-footer em {
+      font-style: italic;
+      color: var(--purple-light);
+    }
+
+    @media (max-width: 768px) {
+      .hiw-title { font-size: 30px; }
+      .hiw-step-number { width: 48px; height: 48px; font-size: 16px; }
+      .hiw-steps::before { left: 23px; }
+      .hiw-step { gap: 18px; padding: 14px 0; }
+      .hiw-step-title { font-size: 19px; }
+      .hiw-step-body { font-size: 13.5px; }
+    }
+
+    /* === INSTANT ESTIMATE CALCULATOR === */
+
+    .step-question {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .step-question { font-size: 22px; }
+    }
+
+    /* === Estimate calculator anchor scroll target === */
+
+    #estimate { scroll-margin-top: 140px; }
+
+    .step-question { scroll-margin-top: 110px; }
+
+    @media (max-width: 768px) {
+      #estimate { scroll-margin-top: 165px; }
+      .step-question { scroll-margin-top: 130px; }
+    }
+  </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": "https://steadfastcleanco.com/#business",
+  "name": "Steadfast Cleaning Co.",
+  "legalName": "Steadfast Cleaning Co. LLC",
+  "alternateName": "Steadfast Cleaning Co., LLC",
+  "description": "Residential cleaning service based in Tampa, Florida, serving Tampa, St. Petersburg, Clearwater, Brandon, Lutz, Wesley Chapel, Land O' Lakes, Riverview, Odessa, and surrounding neighborhoods including South Tampa, Hyde Park, Davis Islands, Bayshore Beautiful, Palma Ceia, Beach Park, Westchase, Carrollwood, New Tampa, Fishhawk Ranch, Town 'N' Country, and Apollo Beach. Family-operated, offering recurring cleaning, deep cleaning, move-in and move-out cleaning, Airbnb turnover, post-construction cleanup, and one-time cleaning services. Licensed, bonded, and insured.",
+  "url": "https://steadfastcleanco.com",
+  "logo": "https://steadfastcleanco.com/images/steadfast-logo-color.png",
+  "image": "https://steadfastcleanco.com/images/steadfast-logo-color.png",
+  "slogan": "Generations of Clean.",
+  "telephone": "+1-813-330-0225",
+  "email": "info@steadfastcleanco.com",
+  "priceRange": "$$",
+  "currenciesAccepted": "USD",
+  "paymentAccepted": "Cash, Credit Card, Debit Card",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Tampa",
+    "addressRegion": "FL",
+    "postalCode": "33601",
+    "addressCountry": "US"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 27.9506,
+    "longitude": -82.4572
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "08:00",
+      "closes": "19:00"
+    }
+  ],
+  "areaServed": [
+    {
+      "@type": "City",
+      "name": "Tampa",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "St. Petersburg",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Clearwater",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Brandon",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Lutz",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Wesley Chapel",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Land O' Lakes",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "City",
+      "name": "Riverview",
+      "containedInPlace": {
+        "@type": "State",
+        "name": "Florida"
+      }
+    },
+    {
+      "@type": "Place",
+      "name": "South Tampa"
+    },
+    {
+      "@type": "Place",
+      "name": "Hyde Park"
+    },
+    {
+      "@type": "Place",
+      "name": "Davis Islands"
+    },
+    {
+      "@type": "Place",
+      "name": "Bayshore Beautiful"
+    },
+    {
+      "@type": "Place",
+      "name": "Palma Ceia"
+    },
+    {
+      "@type": "Place",
+      "name": "Beach Park"
+    },
+    {
+      "@type": "Place",
+      "name": "Westchase"
+    },
+    {
+      "@type": "Place",
+      "name": "Carrollwood"
+    },
+    {
+      "@type": "Place",
+      "name": "New Tampa"
+    },
+    {
+      "@type": "Place",
+      "name": "Fishhawk Ranch"
+    },
+    {
+      "@type": "Place",
+      "name": "Town 'N' Country"
+    },
+    {
+      "@type": "Place",
+      "name": "Apollo Beach"
+    },
+    {
+      "@type": "Place",
+      "name": "Odessa"
+    }
+  ],
+  "knowsAbout": [
+    "Residential cleaning",
+    "Deep cleaning for Florida homes",
+    "Tampa Bay humidity and mold prevention",
+    "Airbnb and short-term rental turnover",
+    "Move-in and move-out cleaning",
+    "Post-construction cleaning",
+    "Real estate listing prep cleaning"
+  ],
+  "knowsLanguage": [
+    "en",
+    "es"
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Cleaning Services",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Recurring Cleaning",
+          "description": "Weekly, biweekly, or monthly recurring residential cleaning. Our most popular service. Lock in a lower rate and keep your home consistently clean."
+        },
+        "price": "115",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": "115",
+          "priceCurrency": "USD",
+          "valueAddedTaxIncluded": false,
+          "description": "Starting price per visit. Final pricing based on home size and condition."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Deep Clean",
+          "description": "Top-to-bottom detail cleaning recommended for first-time clients, homes that haven't been professionally cleaned in 60+ days, or homes that need more than maintenance-level work. Includes baseboards, vents, blinds, ceiling fans, appliance exteriors, and detailed bathroom scrubbing. Determined during a brief walk-through; not booked separately."
+        },
+        "availability": "https://schema.org/InStock",
+        "description": "Pricing determined at walk-through. For recurring clients, the first visit is a Deep Clean priced at 1.5x to 2x the recurring rate; subsequent visits are at the regular recurring rate. For one-time clients needing Deep Clean scope, the quote reflects the additional work."
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Move-In / Move-Out Cleaning",
+          "description": "Full detail cleaning for empty units including inside oven, refrigerator, cabinets, drawers, closets, interior windows, baseboards, blinds, window sills, and wall spot cleaning."
+        },
+        "price": "250",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": "250",
+          "priceCurrency": "USD",
+          "valueAddedTaxIncluded": false,
+          "description": "Starting price. Final pricing based on home size and condition."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Airbnb Turnover Cleaning",
+          "description": "Short-term rental turnover service for Airbnb and VRBO hosts. Includes linen change, full clean, restock check, and same-day turnaround availability for back-to-back bookings."
+        },
+        "price": "140",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": "140",
+          "priceCurrency": "USD",
+          "valueAddedTaxIncluded": false,
+          "description": "Starting price. Final pricing based on property size and turnover requirements."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Post-Construction Cleaning",
+          "description": "Detailed cleanup after renovation or construction. Removes drywall dust, paint overspray, and debris. Full detail of renovated spaces."
+        },
+        "price": "350",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": "350",
+          "priceCurrency": "USD",
+          "valueAddedTaxIncluded": false,
+          "description": "Minimum project price. Final pricing based on scope."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "One-Time Clean",
+          "description": "No-commitment one-time residential cleaning. Ideal for special occasions, guests arriving, or before listing your home."
+        },
+        "price": "155",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "price": "155",
+          "priceCurrency": "USD",
+          "valueAddedTaxIncluded": false,
+          "description": "Starting price by home size: 1 Bed / 1 Bath from $155, 2 Bed / 2 Bath from $205, 3 Bed / 2 Bath from $245, 4 Bed / 3 Bath from $305. Final pricing based on home size and condition."
+        }
+      }
+    ]
+  },
+  "makesOffer": {
+    "@type": "Offer",
+    "name": "New Client Special",
+    "description": "Book your first Deep Clean and get $25 off your first recurring service.",
+    "url": "https://steadfastcleanco.com/contact"
+  },
+  "founder": {
+    "@type": "Person",
+    "name": "Inmarie Garcia"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How often should I deep clean my Tampa home given Florida's humidity?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "In Tampa's subtropical climate, we recommend deep cleaning every 3 to 4 months rather than the typical 6-month schedule used in drier regions. High humidity accelerates mold and mildew growth in bathrooms, kitchens, and laundry areas, while year-round pollen and salt air buildup affect baseboards, window tracks, and HVAC vents. Homes with pets, allergies, or proximity to the bay or Gulf may benefit from quarterly deep cleans to keep allergens and moisture-related grime under control."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What neighborhoods in the Tampa Bay area does Steadfast Cleaning Co. serve?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Steadfast Cleaning Co. serves residential clients across Tampa, St. Petersburg, Clearwater, Brandon, Lutz, Wesley Chapel, Land O' Lakes, Riverview, and Odessa. We specialize in South Tampa, Hyde Park, Davis Islands, Bayshore Beautiful, Palma Ceia, Beach Park, Westchase, Carrollwood, New Tampa, Fishhawk Ranch, Town 'N' Country, and Apollo Beach."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you offer Airbnb and short-term rental turnover cleaning in Tampa?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We provide dedicated Airbnb and short-term rental turnover cleaning across Tampa Bay, including same-day turnovers for hosts with back-to-back bookings. Our turnover service includes linen handling, bathroom and kitchen reset, restocking of host-supplied amenities, and photo documentation between guests."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between a standard cleaning and a deep cleaning?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A standard recurring clean maintains an already-clean home: dusting, vacuuming, mopping, kitchen and bathroom surfaces. A deep clean is more thorough and reaches areas standard cleans don't, including baseboards, light fixtures, vents, grout, appliance exteriors, and detailed scrubbing of bathrooms and kitchens. Most homes need a deep clean as the first service, and then again every 3 to 4 months in Tampa's humid climate."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are you licensed, insured, and bonded?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Steadfast Cleaning Co. is licensed, bonded, and insured. We're a Florida LLC with general liability insurance and a janitorial bond. We carry the bond specifically because it protects clients in the rare event of theft or property damage, and it is especially important for Airbnb hosts, real estate agents, and property managers who entrust us with access to their properties."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you offer move-in and move-out cleaning in Tampa?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Our move-in and move-out cleaning is a top-to-bottom deep clean designed for empty homes. It includes inside cabinets and drawers, inside oven and refrigerator, interior windows, wall spot cleaning, baseboards, blinds, window sills, all bathrooms and kitchens, and detailed floor work. We work with homeowners, renters, real estate agents preparing listings, and property managers turning over rentals."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you bring your own cleaning supplies and equipment?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We bring all supplies and equipment, including vacuums, mops, microfiber cloths, and cleaning solutions. If you prefer specific products (eco-friendly, fragrance-free, allergy-safe, or your own brand), let us know at the walk-through and we will use what you request."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I get a quote for cleaning services in Tampa?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Submit the contact form on steadfastcleanco.com or call (813) 330-0225. We provide quotes based on home size, condition, and the type of service you need. For larger homes or first-time deep cleans, we may schedule a brief walk-through to give you the most accurate flat-rate price rather than a wide range."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you serve real estate agents preparing listings or closings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We work with real estate agents in South Tampa, Westchase, New Tampa, Fishhawk Ranch, Carrollwood, and surrounding areas on listing-prep cleans, pre-photography cleans, and closing-day cleans. We can coordinate with tight closing timelines and offer referral arrangements for agents who use us regularly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are your cleaners background-checked?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Every team member is background-checked before entering a client's home. Trust is foundational to our brand. The name Steadfast reflects the kind of faithful, reliable service we believe every client deserves."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you offer recurring cleaning discounts?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Recurring weekly, bi-weekly, and monthly clients receive flat-rate pricing that is lower than one-time service rates. Recurring cleans are also faster and more efficient over time because the home stays in maintained condition between visits, which is especially valuable in Tampa's high-humidity environment."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Steadfast Cleaning Co. a woman-owned business?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Steadfast Cleaning Co. is owned and operated by Inmarie Garcia, sole member of the Florida LLC. We are pursuing formal Women-Owned Small Business (WOSB) certification through the U.S. Small Business Administration, as well as Florida Office of Supplier Diversity (OSD) certification, to serve corporate, government, and supplier-diversity clients across the Tampa Bay area."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<div id="intro">
+  <div id="bubble-container"></div>
+
+  <div class="spray-scene">
+    <div class="bottle-wrap">
+      <div style="position:relative;">
+        <!-- Spray particles -->
+        <div class="spray-particles" id="spray-particles"></div>
+
+        <!-- 3D Spray Bottle SVG -->
+        <svg class="bottle-svg" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Bottle body -->
+          <defs>
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#5B3A9E"/>
+              <stop offset="40%" stop-color="#8B5FD4"/>
+              <stop offset="70%" stop-color="#7B4FBE"/>
+              <stop offset="100%" stop-color="#3D2580"/>
+            </linearGradient>
+            <linearGradient id="triggerGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#C4A8E8"/>
+              <stop offset="100%" stop-color="#7B4FBE"/>
+            </linearGradient>
+            <linearGradient id="nozzleGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#9B7FD4"/>
+              <stop offset="100%" stop-color="#5B3A9E"/>
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="-4" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.4)"/>
+            </filter>
+          </defs>
+
+          <!-- Main bottle body -->
+          <rect x="30" y="70" width="60" height="95" rx="12" fill="url(#bodyGrad)" filter="url(#shadow)"/>
+
+          <!-- Body highlight -->
+          <rect x="38" y="78" width="12" height="70" rx="6" fill="rgba(255,255,255,0.15)"/>
+
+          <!-- Label area -->
+          <rect x="33" y="100" width="54" height="40" rx="4" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+          <!-- Label text lines -->
+          <rect x="40" y="108" width="40" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+          <rect x="43" y="115" width="34" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+          <rect x="46" y="121" width="28" height="2" rx="1" fill="rgba(255,255,255,0.3)"/>
+          <rect x="43" y="127" width="34" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>
+
+          <!-- Neck -->
+          <rect x="42" y="48" width="36" height="25" rx="6" fill="url(#bodyGrad)"/>
+
+          <!-- Pump head -->
+          <rect x="36" y="38" width="28" height="14" rx="5" fill="#C4A8E8"/>
+          <rect x="38" y="40" width="24" height="10" rx="4" fill="url(#triggerGrad)"/>
+
+          <!-- Nozzle tube going left -->
+          <rect x="8" y="40" width="30" height="8" rx="4" fill="url(#nozzleGrad)"/>
+
+          <!-- Nozzle tip -->
+          <ellipse cx="10" cy="44" rx="5" ry="7" fill="#9B7FD4"/>
+          <ellipse cx="10" cy="44" rx="3" ry="5" fill="#7B4FBE"/>
+          <circle cx="10" cy="44" r="1.5" fill="#C4A8E8"/>
+
+          <!-- Trigger -->
+          <path d="M 50 52 Q 42 60 38 72 L 44 72 Q 47 62 54 55 Z" fill="#C4A8E8" opacity="0.9"/>
+
+          <!-- Bottom cap -->
+          <rect x="30" y="158" width="60" height="7" rx="5" fill="#3D2580"/>
+
+          <!-- Shine overlay -->
+          <ellipse cx="48" cy="100" rx="6" ry="20" fill="rgba(255,255,255,0.08)" transform="rotate(-15 48 100)"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="brand-text">
+      <div class="brand-name-main">STEADFAST</div>
+      <div class="brand-sub">CLEANING CO.</div>
+      <div class="brand-tag">Generations of Clean.</div>
+    </div>
+  </div>
+</div>
+
+<div id="main-content">
+<!-- OFFER BANNER -->
+<div class="offer-banner" id="offer-banner">
+  <p class="offer-banner-text">🧹 <strong>New Client Special:</strong> Book your first Deep Clean and get $25 off your first recurring service.</p>
+  <a href="#estimate" class="offer-claim">Claim Offer</a>
+  <button class="offer-dismiss" id="offer-dismiss" aria-label="Dismiss offer">&#215;</button>
+</div>
+  <!-- PAGE CONTENT GOES HERE -->
+  <!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <picture><source srcset="images/steadfast-logo-color.webp" type="image/webp"><img src="images/steadfast-logo-color.png" alt="Steadfast Cleaning Co." width="399" height="400" fetchpriority="high" /></picture>
+  </a>
+  <div class="nav-contact-widget">
+    <a href="tel:+18133300225" class="nav-contact-icon" aria-label="Call Steadfast Cleaning Co.">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.94a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span class="nav-contact-label">Call</span>
+    </a>
+    <a href="sms:+18133300225" class="nav-contact-icon" aria-label="Text Steadfast Cleaning Co.">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-contact-label">Text</span>
+    </a>
+    <a href="tel:+18133300225" class="nav-contact-number">(813) 330-0225</a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/services">Services</a></li>
+    <li><a href="/contact">Contact</a></li>
+    <li><a href="#estimate" class="nav-cta">Get a Free Estimate</a></li>
+  </ul>
+  <button class="nav-burger" id="nav-burger" aria-label="Open navigation menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-dropdown" id="nav-dropdown">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/services">Services</a></li>
+    <li><a href="/contact">Contact</a></li>
+    <li><a href="#estimate" class="nav-dropdown-cta">Get a Free Estimate</a></li>
+  </ul>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <span class="hero-trust-pill">&#10003; Licensed, Bonded &amp; Insured</span>
+    <span class="hero-eyebrow">Tampa Bay's Trusted Home Cleaners</span>
+    <h1 class="hero-title">Generations of Clean,<br><em>One Home</em><br>at a Time.</h1>
+    <p class="hero-subtitle">Professional residential cleaning for Tampa Bay homeowners in South Tampa, Westchase, Carrollwood, and beyond. Locally owned and built on reliability.</p>
+    <p class="hero-bilingual">Hablamos Español. Bilingual service available.</p>
+    <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="hero-rating" target="_blank" rel="noopener" aria-label="5.0 out of 5 stars on Google">
+      <span class="hero-rating-stars" aria-hidden="true">★★★★★</span>
+      <span class="hero-rating-text">5.0 on Google</span>
+    </a>
+    <div class="hero-actions">
+      <a href="#estimate" class="btn-primary">Get a Free Estimate</a>
+      <a href="/services" class="btn-secondary">
+        View Services
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-image-bg"></div>
+    <div class="hero-right-inner">
+      <div class="hiw-eyebrow">How It Works</div>
+
+      <h2 class="hiw-title">From <em>first call</em> to spotless home.</h2>
+
+      <p class="hiw-sub">No surprises, no call centers, no rotating cleaners. Three simple steps, every time.</p>
+
+      <div class="hiw-steps">
+
+        <div class="hiw-step">
+          <div class="hiw-step-number">01</div>
+          <div class="hiw-step-content">
+            <h3 class="hiw-step-title">Free <em>walk-through.</em></h3>
+            <p class="hiw-step-body">We visit your home, learn your preferences, and give you a flat-rate estimate. No pressure, no obligation.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-number">02</div>
+          <div class="hiw-step-content">
+            <h3 class="hiw-step-title">Your <em>team</em> arrives.</h3>
+            <p class="hiw-step-body">Same trained, background-checked pros every visit. They know your home, your standards, and your schedule.</p>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-number">03</div>
+          <div class="hiw-step-content">
+            <h3 class="hiw-step-title">24-hour <em>promise.</em></h3>
+            <p class="hiw-step-body">Not happy with something? We return within 24 hours and make it right. No questions asked, ever.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C4A8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <span class="trust-label">Satisfaction Guaranteed</span>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C4A8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <span class="trust-label">Free Estimates</span>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C4A8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      </div>
+      <span class="trust-label">Eco-Friendly Available</span>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C4A8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <span class="trust-label">Licensed, Bonded &amp; Insured</span>
+    </div>
+  </div>
+</div>
+
+<!-- GUARANTEE STRIP -->
+<div class="guarantee-strip">
+  <div class="guarantee-inner">
+    <div class="guarantee-icon">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+    </div>
+    <div>
+      <div class="guarantee-title">100% Satisfaction Guaranteed</div>
+      <div class="guarantee-sub">Not happy? We return within 24 hours, no questions asked.</div>
+    </div>
+  </div>
+</div>
+
+<!-- INSTANT ESTIMATE CALCULATOR -->
+<section class="estimator-section" id="estimate">
+
+  <div class="estimator-header">
+    <div class="estimator-eyebrow">Instant Estimate</div>
+    <h2 class="estimator-title">See Your Starting Price in Under a Minute</h2>
+    <p class="estimator-intro">Answer a few quick questions and we'll give you an instant estimate based on home size and service type.</p>
+  </div>
+
+  <div class="estimate-banner">
+    <div class="estimate-banner-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="3" width="14" height="18" rx="2"/>
+        <line x1="8" y1="7" x2="16" y2="7"/>
+        <line x1="8" y1="12" x2="8" y2="12"/>
+        <line x1="12" y1="12" x2="12" y2="12"/>
+        <line x1="16" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="8" y2="16"/>
+        <line x1="12" y1="16" x2="12" y2="16"/>
+        <line x1="16" y1="16" x2="16" y2="16"/>
+      </svg>
+    </div>
+    <div class="estimate-banner-text">
+      <h3>Whole-home cleaning, priced by size.</h3>
+      <p>We'll confirm your final quote after a walk-through.</p>
+    </div>
+  </div>
+
+  <div class="estimator">
+
+    <div class="form-side">
+
+      <div class="step-track">
+        <div class="step-dot active" data-step="1"></div>
+        <div class="step-dot" data-step="2"></div>
+        <div class="step-dot" data-step="3"></div>
+        <div class="step-dot" data-step="4"></div>
+      </div>
+
+      <div class="step active" data-step="1">
+        <div class="step-eyebrow">Step 1 of 4</div>
+        <h3 class="step-question">What kind of cleaning do you need?</h3>
+        <div class="options grid-2" id="service-options">
+          <button class="opt" data-service="recurring"><span class="opt-title">Recurring Cleaning</span><span class="opt-sub">Weekly, biweekly, or monthly: best value</span></button>
+          <button class="opt" data-service="onetime"><span class="opt-title">One-Time Clean</span><span class="opt-sub">No commitment, special occasions</span></button>
+          <button class="opt" data-service="moveinout"><span class="opt-title">Move-In / Move-Out</span><span class="opt-sub">Full empty-unit detail</span></button>
+          <button class="opt" data-service="airbnb"><span class="opt-title">Airbnb Turnover</span><span class="opt-sub">Linen change, full clean, restock</span></button>
+          <button class="opt" data-service="postconstruction"><span class="opt-title">Post-Construction</span><span class="opt-sub">Drywall dust, paint, debris</span></button>
+        </div>
+        <div class="form-nav">
+          <button class="btn-back" disabled>← Back</button>
+          <button class="btn-next" id="est-next-1" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="2">
+        <div class="step-eyebrow">Step 2 of 4</div>
+        <h3 class="step-question">How many bedrooms?</h3>
+        <div class="options grid-2" id="bed-options">
+          <button class="opt size-tile" data-bed="1">
+            <span class="opt-title">1 Bed</span>
+            <span class="opt-sub">Up to ~700 sq ft</span>
+            <span class="opt-meta">Includes kitchen, living, dining</span>
+          </button>
+          <button class="opt size-tile" data-bed="2">
+            <span class="opt-title">2 Bed</span>
+            <span class="opt-sub">Up to ~1,100 sq ft</span>
+            <span class="opt-meta">Includes kitchen, living, dining</span>
+          </button>
+          <button class="opt size-tile" data-bed="3">
+            <span class="opt-title">3 Bed</span>
+            <span class="opt-sub">Up to ~1,600 sq ft</span>
+            <span class="opt-meta">Includes kitchen, living, dining</span>
+          </button>
+          <button class="opt size-tile" data-bed="4">
+            <span class="opt-title">4 Bed</span>
+            <span class="opt-sub">Up to ~2,200 sq ft</span>
+            <span class="opt-meta">Includes kitchen, living, dining</span>
+          </button>
+          <button class="opt size-tile" data-bed="5">
+            <span class="opt-title">5+</span>
+            <span class="opt-sub">Over ~2,200 sq ft. Request quote.</span>
+          </button>
+          <div class="opt-helper">
+            <span class="opt-helper-title">Not sure which fits?</span>
+            <span class="opt-helper-sub">Pick the closest. We'll confirm at the walk-through.</span>
+          </div>
+        </div>
+        <div class="form-nav">
+          <button class="btn-back">← Back</button>
+          <button class="btn-next" id="est-next-2" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="3">
+        <div class="step-eyebrow">Step 3 of 4</div>
+        <h3 class="step-question">How many bathrooms?</h3>
+        <div class="options compact grid-4" id="bath-options">
+          <button class="opt" data-bath="1"><span class="opt-title">1</span></button>
+          <button class="opt" data-bath="2"><span class="opt-title">2</span></button>
+          <button class="opt" data-bath="3"><span class="opt-title">3</span></button>
+          <button class="opt" data-bath="4"><span class="opt-title">4+</span></button>
+        </div>
+        <div class="form-nav">
+          <button class="btn-back">← Back</button>
+          <button class="btn-next" id="est-next-3" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="4">
+        <div class="step-eyebrow">Step 4 of 4</div>
+        <h3 class="step-question">How often would you like service?</h3>
+        <div class="options grid-2" id="freq-options">
+          <button class="opt" data-freq="weekly"><span class="opt-title">Weekly</span><span class="opt-sub">Best maintenance, 10% off</span></button>
+          <button class="opt" data-freq="biweekly"><span class="opt-title">Biweekly</span><span class="opt-sub">Most popular, standard rate</span></button>
+          <button class="opt" data-freq="monthly"><span class="opt-title">Monthly</span><span class="opt-sub">Light maintenance, +$20 / visit</span></button>
+        </div>
+        <div class="form-nav">
+          <button class="btn-back">← Back</button>
+          <button class="btn-next" id="est-next-4" disabled>See estimate →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="result-side">
+
+      <div id="est-pre-result">
+        <div class="result-eyebrow">Your Estimate Builds Here</div>
+        <p class="summary-empty-msg">Answer a few quick questions, and we'll show your estimated starting price right here.</p>
+
+        <div class="summary-block">
+          <div class="summary-row"><span class="summary-label">Service</span><span class="summary-value empty" id="est-sum-service">Not selected</span></div>
+          <div class="summary-row"><span class="summary-label">Bedrooms</span><span class="summary-value empty" id="est-sum-bed"></span></div>
+          <div class="summary-row"><span class="summary-label">Bathrooms</span><span class="summary-value empty" id="est-sum-bath"></span></div>
+          <div class="summary-row"><span class="summary-label">Frequency</span><span class="summary-value empty" id="est-sum-freq"></span></div>
+        </div>
+
+        <div class="note-box-est"><strong>Free in-home estimates.</strong> Hablamos Español.</div>
+      </div>
+
+      <div class="result-card" id="est-result">
+        <div class="estimate-pill">Estimated Starting Price</div>
+        <span class="price-prefix">From</span>
+        <div class="price-amount"><span class="dollar">$</span><span id="est-price-num">180</span></div>
+        <div class="price-cadence" id="est-price-cadence">per visit</div>
+
+        <div class="note-box-est" id="est-result-note"><strong>Estimate based on whole-home cleaning.</strong> Final pricing confirmed at walk-through.</div>
+
+        <div class="breakdown" id="est-breakdown"></div>
+
+        <div class="quote-request-panel" id="est-quote-request">
+          <h3 class="quote-request-title">Let's talk about your home</h3>
+          <p class="quote-request-body">Homes over ~2,200 sq ft need a walk-through for accurate pricing. Send a request and we'll reach out.</p>
+        </div>
+
+        <div class="result-actions" id="est-result-actions">
+          <button class="btn-book" id="est-book-btn">Send Estimate Request →</button>
+          <button class="btn-restart" id="est-restart-btn">Start Over</button>
+        </div>
+
+        <div class="confirmation" id="est-confirmation">
+          <div class="confirmation-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <h3 class="confirmation-title">Estimate request sent.</h3>
+          <p class="confirmation-body">Now we just need your contact info so we can confirm the details and schedule your free walk-through. Redirecting you now.</p>
+          <p class="confirmation-meta">Not redirecting? Click <a href="/contact" id="est-fallback-link">here to continue</a>.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- SERVICES -->
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-label">What We Do</div>
+      <h2 class="section-title">Services Built for<br>Tampa Bay Homes</h2>
+      <p class="section-subtitle">From recurring biweekly cleans to deep cleans, move-in and move-out cleaning, vacation rental and Airbnb turnovers, and post-construction cleanup. We handle it all with care and consistency across the Tampa Bay area.</p>
+    </div>
+    <a href="/services" class="btn-secondary" style="white-space:nowrap;color:var(--purple-mid);">
+      All Services
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card featured">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="service-badge">Best Value</span>
+      <div class="service-name">Recurring Cleaning</div>
+      <p class="service-desc">Weekly, biweekly, or monthly: our most popular service. Lock in a lower rate and keep your home consistently clean.</p>
+      <p class="service-price">From $115 / visit</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+      </div>
+      <div class="service-name">First Clean Included</div>
+      <p class="service-desc">Every recurring client starts with a thorough Deep Clean: baseboards, vents, light fixtures, ceiling fans, appliance exteriors, and detailed bathroom scrubbing. Built into your first visit, no separate booking required.</p>
+      <p class="service-price"><a href="/services#deep-cleaning" style="color: var(--purple-mid); text-decoration: none; font-weight: 600;">Learn more &rarr;</a></p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <div class="service-name">Move-In / Move-Out</div>
+      <p class="service-desc">Full detail for empty units: inside oven, fridge, cabinets, closets, interior windows, wall spot cleaning. Leave nothing behind.</p>
+      <p class="service-price">From $250</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div class="service-name">Airbnb Turnover</div>
+      <p class="service-desc">Linen change, full clean, restock check. Fast turnaround for short-term rental hosts.</p>
+      <p class="service-price">From $140</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </div>
+      <div class="service-name">Post-Construction</div>
+      <p class="service-desc">Drywall dust, paint overspray, debris removal. Full detail of renovated spaces. Minimum $350.</p>
+      <p class="service-price">From $350</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+      </div>
+      <div class="service-name">One-Time Clean</div>
+      <p class="service-desc">No commitment required. Great for special occasions, guests arriving, or before you list your home.</p>
+      <p class="service-price">From $155</p>
+    </div>
+  </div>
+</div>
+
+<!-- WHY STEADFAST -->
+<section class="why-section">
+  <div class="why-inner">
+    <div class="why-visual">
+      <div class="why-card-stack">
+        <div class="why-card">
+          <div class="why-card-number">Family-Operated</div>
+        </div>
+        <div class="why-card">
+          <div class="why-card-number">Free</div>
+          <div class="why-card-label">In-Home Estimates</div>
+        </div>
+        <div class="why-card accent">
+          <div>
+            <div class="why-card-number">Tampa Bay</div>
+            <div class="why-card-label">Locally owned &amp; operated</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="why-content">
+      <div class="section-label">Why Steadfast</div>
+      <h2 class="section-title">Why Choose<br>Steadfast?</h2>
+      <p class="section-subtitle">Locally owned and family-operated. Serving South Tampa, Westchase, Carrollwood, Brandon, Riverview, St. Petersburg, Clearwater, Lutz, Wesley Chapel, Odessa, New Tampa, Fishhawk Ranch, and surrounding Tampa Bay communities. We treat every home like it's our own.</p>
+      <div class="why-points">
+        <div class="why-point">
+          <div class="why-point-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <div class="why-point-title">Reliable &amp; On Time</div>
+            <div class="why-point-text">We show up when we say we will. No last-minute cancellations. Your schedule matters.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="why-point-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          </div>
+          <div>
+            <div class="why-point-title">Eco-Friendly Products Available</div>
+            <div class="why-point-text">Eco-friendly cleaning products are available on request. Tell us your preference at the walk-through and we will use products that match: eco-friendly, fragrance-free, or your own brand.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="why-point-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="why-point-title">Satisfaction Guaranteed</div>
+            <div class="why-point-text">We return within 24 hours, no questions. Your satisfaction is our commitment.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="why-point-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div>
+            <div class="why-point-title">Built for Florida Homes.</div>
+            <div class="why-point-text">Tampa Bay's climate means more sand tracked in, more humidity, more allergens. Our cleaning protocols are designed specifically for Florida homes, from salt air residue on windows to the pollen that drifts in from open doors all year long. We know what your home faces because it's our home too.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY LOCAL BEATS CORPORATE -->
+<section class="local-section">
+  <div class="local-inner">
+    <div class="local-header">
+      <div class="local-eyebrow">Local vs. Franchise</div>
+      <h2 class="local-title">Why Choose a Local Cleaner<br>Over a Big Franchise?</h2>
+      <p class="local-sub">The difference you'll actually feel.</p>
+    </div>
+    <div class="local-cards">
+      <div class="local-card">
+        <div class="local-card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div class="local-card-title">You Know Who's Coming.</div>
+        <p class="local-card-text">With franchises, you get whoever's available. With Steadfast, you get a consistent team that knows your home, your preferences, and your standards.</p>
+      </div>
+      <div class="local-card">
+        <div class="local-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.94a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="local-card-title">Call Us Directly.</div>
+        <p class="local-card-text">No call centers, no ticket systems. Text or call us directly at <a href="tel:+18133300225" style="color: white; text-decoration: none;">(813) 330-0225</a> and get a real answer from the people doing the work.</p>
+      </div>
+      <div class="local-card">
+        <div class="local-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="local-card-title">We Actually Care.</div>
+        <p class="local-card-text">We're a family-operated Tampa Bay business. Your referral is our lifeline. That means we're invested in doing an exceptional job every single time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEET INMARIE -->
+<section class="meet-owner-section">
+  <div class="meet-owner-inner">
+    <div class="meet-owner-photo">
+      <picture><source srcset="images/inmarie-owner.webp" type="image/webp"><img src="images/inmarie-owner.jpg" alt="Inmarie Garcia, owner of Steadfast Cleaning Co." width="450" height="800" loading="lazy" decoding="async" /></picture>
+    </div>
+    <div class="meet-owner-text">
+      <div class="meet-owner-eyebrow">The Owner</div>
+      <h2 class="meet-owner-heading">Meet Inmarie</h2>
+      <p class="meet-owner-body">Hi, I’m Inmarie, the owner of Steadfast Cleaning Co. I started it here in Westchase. I clean every home the way I would want my own cleaned: carefully, on time, and with attention to the details most people skip.</p>
+      <p class="meet-owner-signature">Inmarie Garcia, Owner</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICE AREAS -->
+<div class="areas-section" id="where-we-clean">
+  <div class="section-label">Where We Clean</div>
+  <h2 class="section-title" style="margin-bottom:8px;">Serving the Greater<br>Tampa Bay Area</h2>
+  <p style="font-size:15px;color:var(--text-mid);line-height:1.7;max-width:780px;margin-bottom:32px;">Whether you need recurring biweekly cleaning, a one-time deep clean, move-in or move-out service, or Airbnb and vacation rental turnover cleaning. Steadfast Cleaning Co. serves homeowners and property managers across the greater Tampa Bay area.</p>
+  <div class="areas-grid">
+    <div class="area-chip">Tampa</div>
+    <div class="area-chip">South Tampa</div>
+    <div class="area-chip">Hyde Park</div>
+    <div class="area-chip">Davis Islands</div>
+    <div class="area-chip">Bayshore Beautiful</div>
+    <div class="area-chip">Palma Ceia</div>
+    <div class="area-chip">Beach Park</div>
+    <div class="area-chip">Westchase</div>
+    <div class="area-chip">Carrollwood</div>
+    <div class="area-chip">Town 'N' Country</div>
+    <div class="area-chip">New Tampa</div>
+    <div class="area-chip">Wesley Chapel</div>
+    <div class="area-chip">Land O' Lakes</div>
+    <div class="area-chip">Lutz</div>
+    <div class="area-chip">Odessa</div>
+    <div class="area-chip">Brandon</div>
+    <div class="area-chip">Riverview</div>
+    <div class="area-chip">Apollo Beach</div>
+    <div class="area-chip">Fishhawk Ranch</div>
+    <div class="area-chip">St. Petersburg</div>
+    <div class="area-chip">Clearwater</div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="testimonials-inner">
+    <div class="testimonials-header">
+      <div class="testimonials-eyebrow">Reviews</div>
+      <h2 class="testimonials-title">What our clients say</h2>
+    </div>
+    <div class="testimonials-grid">
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <p class="testimonial-quote">“I am a busy mom and find it hard to keep up with my home. It was so nice to finally see it so clean. Things I never even thought of cleaning were cleaned! The team was so professional and listened to what my biggest concerns were in my home. I will be using their services again!”</p>
+        <div class="testimonial-attribution">Lydia C.</div>
+      </article>
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <p class="testimonial-quote">“I can't say enough great things about Inmarie and Steadfast Cleaning Company. Her team cleaned my Lakechase condo and the results were incredible. Every surface shines, the attention to detail is obvious, and the whole place feels brand new. They were friendly, efficient, and extremely professional throughout the entire process. If you're looking for a cleaning service that truly delivers, this is the one.”</p>
+        <div class="testimonial-attribution">Rafael P.</div>
+      </article>
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <p class="testimonial-quote">“Inmarie is a hard worker who loves what she does, her motto is perfection. I super recommend her, give her a call, you won't regret it.”</p>
+        <div class="testimonial-attribution">Criss H.</div>
+      </article>
+    </div>
+    <div class="testimonials-footer">
+      <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="testimonials-link" target="_blank" rel="noopener">See all reviews on Google →</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stf-faq {
+    --stf-purple: #6B46A8;
+    --stf-purple-deep: #4A2E7A;
+    --stf-ink: #1F1530;
+    --stf-body: #4A4458;
+    --stf-muted: #8A8499;
+    --stf-bg: #FAFAFB;
+    --stf-line: #E8E5ED;
+    --stf-white: #FFFFFF;
+
+    background: var(--stf-bg);
+    padding: 5rem 1.5rem;
+    color: var(--stf-ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .stf-faq__inner {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .stf-faq__header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+
+  .stf-faq__eyebrow {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--stf-purple);
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0 0 1rem 0;
+    display: inline-block;
+  }
+
+  .stf-faq__heading {
+    font-size: clamp(1.875rem, 4vw, 2.5rem);
+    line-height: 1.2;
+    color: var(--stf-ink);
+    margin: 0 0 1.25rem 0;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .stf-faq__intro {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--stf-body);
+    margin: 0 auto;
+    max-width: 640px;
+  }
+
+  .stf-faq__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .stf-faq__item {
+    background: var(--stf-white);
+    border: 1px solid var(--stf-line);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .stf-faq__item:hover {
+    border-color: #D4CCE0;
+  }
+
+  .stf-faq__item[open] {
+    border-color: var(--stf-purple);
+    box-shadow: 0 4px 16px rgba(107, 70, 168, 0.08);
+  }
+
+  .stf-faq__item summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    color: var(--stf-ink);
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .stf-faq__item summary:hover {
+    color: var(--stf-purple);
+  }
+
+  .stf-faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .stf-faq__icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F4EFFA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.3s ease;
+    position: relative;
+  }
+
+  .stf-faq__item[open] .stf-faq__icon {
+    background: var(--stf-purple);
+    transform: rotate(45deg);
+  }
+
+  .stf-faq__icon::before,
+  .stf-faq__icon::after {
+    content: '';
+    position: absolute;
+    background: var(--stf-purple);
+    border-radius: 1px;
+    transition: background 0.2s ease;
+  }
+
+  .stf-faq__icon::before {
+    top: 15px;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+  }
+
+  .stf-faq__icon::after {
+    left: 15px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+  }
+
+  .stf-faq__item[open] .stf-faq__icon::before,
+  .stf-faq__item[open] .stf-faq__icon::after {
+    background: var(--stf-white);
+  }
+
+  .stf-faq__answer {
+    padding: 0 1.75rem 1.75rem 1.75rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--stf-body);
+  }
+
+  .stf-faq__answer p {
+    margin: 0;
+  }
+
+  .stf-faq__answer em {
+    color: var(--stf-purple-deep);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .stf-faq__bottom {
+    margin-top: 3rem;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .stf-faq__bottom-text {
+    font-size: 1.0625rem;
+    color: var(--stf-body);
+    margin: 0 0 1.25rem 0;
+  }
+
+  .stf-faq__bottom-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--stf-purple);
+    color: var(--stf-white);
+    text-decoration: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .stf-faq__bottom-cta:hover {
+    background: var(--stf-purple-deep);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    .stf-faq { padding: 3.5rem 1rem; }
+    .stf-faq__item summary { padding: 1.25rem 1.25rem; font-size: 1rem; gap: 1rem; }
+    .stf-faq__answer { padding: 0 1.25rem 1.5rem 1.25rem; }
+  }
+</style>
+
+<section class="stf-faq" aria-labelledby="stf-faq-heading">
+  <div class="stf-faq__inner">
+
+    <div class="stf-faq__header">
+      <p class="stf-faq__eyebrow">Frequently Asked</p>
+      <h2 class="stf-faq__heading" id="stf-faq-heading">Everything Tampa Bay Homeowners Want to Know</h2>
+      <p class="stf-faq__intro">
+        From Florida humidity and deep cleans to Airbnb turnovers, listing prep, and how we work: the answers homeowners across the greater Tampa Bay area ask us most.
+      </p>
+    </div>
+
+    <div class="stf-faq__list">
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>How often should I deep clean my Tampa home given Florida's humidity?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>In Tampa's subtropical climate, we recommend deep cleaning every 3 to 4 months rather than the typical 6-month schedule used in drier regions. High humidity accelerates mold and mildew growth in bathrooms, kitchens, and laundry areas, while year-round pollen and salt air buildup affect baseboards, window tracks, and HVAC vents. Homes with pets, allergies, or proximity to the bay or Gulf may benefit from quarterly deep cleans to keep allergens and moisture-related grime under control.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>What neighborhoods in the Tampa Bay area do you serve?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Steadfast Cleaning Co. serves residential clients across Tampa, St. Petersburg, Clearwater, Brandon, Lutz, Wesley Chapel, Land O' Lakes, Riverview, and Odessa. We specialize in South Tampa, Hyde Park, Davis Islands, Bayshore Beautiful, Palma Ceia, Beach Park, Westchase, Carrollwood, New Tampa, Fishhawk Ranch, Town 'N' Country, and Apollo Beach.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Do you offer Airbnb and short-term rental turnover cleaning?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. We provide dedicated Airbnb and short-term rental turnover cleaning across Tampa Bay, including same-day turnovers for hosts with back-to-back bookings. Our turnover service includes linen handling, bathroom and kitchen reset, restocking of host-supplied amenities, and photo documentation between guests.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>What is the difference between a standard cleaning and a deep cleaning?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>A standard recurring clean maintains an already-clean home: dusting, vacuuming, mopping, kitchen and bathroom surfaces. A deep clean is more thorough and reaches areas standard cleans don't, including baseboards, light fixtures, vents, grout, appliance exteriors, and detailed scrubbing of bathrooms and kitchens. Most homes need a deep clean as the first service, and then again every 3 to 4 months in Tampa's humid climate.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Are you licensed, insured, and bonded?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. Steadfast Cleaning Co. is licensed, bonded, and insured. We're a Florida LLC with general liability insurance and a janitorial bond. We carry the bond specifically because it protects clients in the rare event of theft or property damage, and it is especially important for Airbnb hosts, real estate agents, and property managers who entrust us with access to their properties.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Do you offer move-in and move-out cleaning?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. Our move-in and move-out cleaning is a top-to-bottom deep clean designed for empty homes. It includes inside cabinets and drawers, inside oven and refrigerator, interior windows, wall spot cleaning, baseboards, blinds, window sills, all bathrooms and kitchens, and detailed floor work. We work with homeowners, renters, real estate agents preparing listings, and property managers turning over rentals.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Do you bring your own cleaning supplies and equipment?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. We bring all supplies and equipment, including vacuums, mops, microfiber cloths, and cleaning solutions. If you prefer specific products (eco-friendly, fragrance-free, allergy-safe, or your own brand), let us know at the walk-through and we will use what you request.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>How do I get a quote for cleaning services?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Submit the contact form on steadfastcleanco.com or call (813) 330-0225. Estimates are always free. We provide quotes based on home size, condition, and the type of service you need. For larger homes or first-time deep cleans, we may schedule a brief in-home walk-through to give you the most accurate flat-rate price rather than a wide range.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Do you serve real estate agents preparing listings or closings?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. We work with real estate agents in South Tampa, Westchase, New Tampa, Fishhawk Ranch, Carrollwood, and surrounding areas on listing-prep cleans, pre-photography cleans, and closing-day cleans. We can coordinate with tight closing timelines and offer referral arrangements for agents who use us regularly.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Are your cleaners background-checked?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. Every team member is background-checked before entering a client's home. Trust is foundational to our brand. The name <em>Steadfast</em> reflects the kind of faithful, reliable service we believe every client deserves.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Do you offer recurring cleaning discounts?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. Recurring weekly, biweekly, and monthly clients receive flat-rate pricing that is lower than one-time service rates. Recurring is our most popular service and our best value. Clients also save with our New Client Special: book a Deep Clean and get $25 off your first recurring service.</p>
+        </div>
+      </details>
+
+      <details class="stf-faq__item">
+        <summary>
+          <span>Is Steadfast Cleaning Co. a woman-owned business?</span>
+          <span class="stf-faq__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="stf-faq__answer">
+          <p>Yes. Steadfast Cleaning Co. is owned and operated by Inmarie Garcia, sole member of the Florida LLC. We are pursuing formal Women-Owned Small Business (WOSB) certification through the U.S. Small Business Administration, as well as Florida Office of Supplier Diversity (OSD) certification, to serve corporate, government, and supplier-diversity clients across the Tampa Bay area.</p>
+        </div>
+      </details>
+
+    </div>
+
+    <div class="stf-faq__bottom">
+      <p class="stf-faq__bottom-text">Don't see your question? Text or call us directly. You'll get a real answer from the people doing the work.</p>
+      <a href="tel:+18133300225" class="stf-faq__bottom-cta">✆ (813) 330-0225</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <h2>Ready for a Spotless Home?</h2>
+  <p>Call or text us to schedule your first cleaning in South Tampa, Westchase, Carrollwood, Brandon, Riverview, St. Petersburg, Clearwater, Lutz, Wesley Chapel, Odessa, or anywhere across Tampa Bay.</p>
+  <div class="cta-actions">
+    <a href="#estimate" class="btn-white">Get a Free Estimate</a>
+    <a href="tel:+18133300225" class="btn-outline-white">&#9990; (813) 330-0225</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <picture><source srcset="images/steadfast-logo-white.webp" type="image/webp"><img src="images/steadfast-logo-white.png" alt="Steadfast Cleaning Co." width="399" height="400" loading="lazy" decoding="async" /></picture>
+      <div class="footer-tagline">Generations of Clean.</div>
+      <div class="footer-bilingual">Hablamos Español.</div>
+      <div class="footer-credential">&#10003; Licensed, Bonded &amp; Insured</div>
+      <div class="footer-reviews"><a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" target="_blank" rel="noopener"><span class="footer-reviews-stars" aria-hidden="true">★★★★★</span> Rated 5.0 by Tampa families on Google</a></div>
+      <div class="footer-contact-item">Tampa Bay, Florida</div>
+      <div class="footer-contact-item"><a href="tel:+18133300225">(813) 330-0225</a></div>
+      <div class="footer-contact-item"><a href="mailto:info@steadfastcleanco.com">info@steadfastcleanco.com</a></div>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/services">Services</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="/services">Recurring Cleaning</a></li>
+        <li><a href="/services">Deep Clean</a></li>
+        <li><a href="/services">Move-In/Out</a></li>
+        <li><a href="/services">Airbnb Turnover</a></li>
+        <li><a href="/services">Post-Construction</a></li>
+        <li><a href="/services">One-Time Clean</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Neighborhoods</h4>
+      <ul>
+        <li><a href="/house-cleaning-westchase">Westchase</a></li>
+        <li><a href="/house-cleaning-carrollwood">Carrollwood</a></li>
+        <li><a href="/house-cleaning-south-tampa">South Tampa</a></li>
+        <li><a href="/#where-we-clean">All of Tampa Bay</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Steadfast Cleaning Co., LLC &bull; Tampa, Florida</span>
+    <span>All prices subject to in-home estimate</span>
+    <span class="footer-play"><a href="/play/">Play our cleaning game</a></span>
+  </div>
+</footer>
+
+<script>
+  // Smooth reveal on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.service-card, .why-point, .area-chip').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(el);
+    });
+  }
+</script>
+</div>
+
+<script>
+/* ============================================================
+   INTRO ANIMATION ENGINE v2
+   Enhancements: mist spray, floating bubbles, diagonal shine,
+   typewriter brand text, iris-wipe exit, click-to-skip
+   ============================================================ */
+
+// ── 1. SPRAY MIST (25–30 particles, size 2–8px, some streak) ──
+const spray = document.getElementById('spray-particles');
+const sprayCount = 26 + Math.floor(Math.random() * 5);
+for (let i = 0; i < sprayCount; i++) {
+  const dot = document.createElement('div');
+  const size = 2 + Math.random() * 6;
+  const angleDeg = 175 + Math.random() * 40;
+  const angleRad = angleDeg * Math.PI / 180;
+  const dist = 35 + Math.random() * 90;
+  const tx = Math.cos(angleRad) * dist;
+  const ty = Math.sin(angleRad) * dist;
+  const dur = 0.35 + Math.random() * 0.45;
+  const delay = 1.5 + Math.random() * 0.25;
+  const isStreak = Math.random() < 0.25;
+  dot.style.cssText = `
+    position:absolute;
+    width:${isStreak ? size * 3 : size}px;
+    height:${size}px;
+    background:rgba(${180 + Math.floor(Math.random()*76)},${140 + Math.floor(Math.random()*60)},${220 + Math.floor(Math.random()*36)},0.9);
+    border-radius:${isStreak ? '2px' : '50%'};
+    opacity:0;
+    transform-origin:left center;
+    animation:sprayFly ${dur}s ease ${delay}s forwards;
+    --tx:${tx}px; --ty:${ty}px;
+  `;
+  dot.style.setProperty('--tx', `${tx}px`);
+  dot.style.setProperty('--ty', `${ty}px`);
+  spray.appendChild(dot);
+}
+
+// ── 3. CSS BUBBLES ──
+const bubbleContainer = document.getElementById('bubble-container');
+for (let i = 0; i < 70; i++) {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const size = (8 + Math.random() * 20) + 'px';
+  b.style.setProperty('--size', size);
+  b.style.setProperty('--opacity', (0.15 + Math.random() * 0.35).toFixed(2));
+  b.style.setProperty('--dur', (5 + Math.random() * 4) + 's');
+  b.style.setProperty('--delay', (Math.random() * 2.5) + 's');
+  b.style.setProperty('--sway', (Math.random() > 0.5 ? '' : '-') + (10 + Math.random() * 30) + 'px');
+  b.style.left = (Math.random() * 100) + '%';
+  bubbleContainer.appendChild(b);
+}
+
+// ── 7. AUTO-DISMISS at 4s + click-anywhere-to-skip ──
+let dismissed = false;
+function doExit() {
+  if (dismissed) return;
+  dismissed = true;
+  const intro = document.getElementById('intro');
+  const main = document.getElementById('main-content');
+  if (!intro) return;
+  intro.classList.add('exit');
+  main.classList.add('visible');
+  document.body.style.overflow = 'auto';
+  sessionStorage.setItem('introSeen', '1');
+  setTimeout(() => { intro.remove(); }, 500);
+}
+
+// Skip animation if already seen this session
+if (sessionStorage.getItem('introSeen') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const intro = document.getElementById('intro');
+  const main = document.getElementById('main-content');
+  if (intro) intro.remove();
+  if (main) {
+    main.classList.add('visible');
+    document.body.style.overflow = 'auto';
+  }
+} else {
+  setTimeout(doExit, 2800);
+  document.getElementById('intro')?.addEventListener('click', doExit);
+}
+
+// ── 8. HAMBURGER NAV ──
+const burger = document.getElementById('nav-burger');
+const dropdown = document.getElementById('nav-dropdown');
+burger.addEventListener('click', () => {
+  const banner = document.getElementById('offer-banner');
+  if (banner) {
+    dropdown.style.top = Math.floor(banner.getBoundingClientRect().bottom) + 'px';
+  }
+  const isOpen = dropdown.classList.toggle('open');
+  burger.classList.toggle('open', isOpen);
+  burger.setAttribute('aria-expanded', isOpen);
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('nav') && !e.target.closest('#nav-dropdown')) {
+    dropdown.classList.remove('open');
+    burger.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+  }
+});
+
+// ── 9. OFFER BANNER DISMISS ──
+(function() {
+  const banner = document.getElementById('offer-banner');
+  const btn    = document.getElementById('offer-dismiss');
+  if (!banner || !btn) return;
+  btn.addEventListener('click', () => {
+    banner.classList.add('dismissed');
+    sessionStorage.setItem('offerDismissed', '1');
+  });
+})();
+</script>
+
+<script>
+(function() {
+  const RECURRING_BIWEEKLY = { 1: 115, 2: 150, 3: 180, 4: 225, 5: 280 };
+  const ONETIME = { 1: 155, 2: 205, 3: 245, 4: 305, 5: 370 };
+  const MOVEINOUT = { 1: 250, 2: 295, 3: 350, 4: 425, 5: 500 };
+  const AIRBNB = { 1: 140, 2: 165, 3: 195, 4: 235, 5: 280 };
+  const SQFT_BY_BED = { '1': '700', '2': '1,100', '3': '1,600', '4': '2,200' };
+
+  const SERVICE_LABELS = {
+    recurring: 'Recurring Cleaning',
+    onetime: 'One-Time Clean',
+    moveinout: 'Move-In / Move-Out',
+    airbnb: 'Airbnb Turnover',
+    postconstruction: 'Post-Construction'
+  };
+  const FREQ_LABELS = { weekly: 'Weekly', biweekly: 'Biweekly', monthly: 'Monthly' };
+
+  const state = { service: null, bed: null, bath: null, freq: null };
+  let currentStep = 1;
+
+  function $(s) { return document.querySelector(s); }
+  function $$(s) { return document.querySelectorAll(s); }
+
+  function bathSurcharge(bath) {
+    if (bath <= 2) return 0;
+    if (bath == 3) return 20;
+    if (bath >= 4) return 40;
+    return 0;
+  }
+
+  function calculatePrice() {
+    const bed = parseInt(state.bed);
+    const bath = parseInt(state.bath);
+    let base = 0;
+    let cadence = 'per visit';
+    let breakdown = [];
+
+    if (state.service === 'recurring') {
+      base = RECURRING_BIWEEKLY[bed] || RECURRING_BIWEEKLY[5];
+      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed biweekly base`, val: `$${base}` });
+      const surcharge = bathSurcharge(bath);
+      if (surcharge > 0) {
+        base += surcharge;
+        breakdown.push({ label: `${bath === 4 ? '4+' : bath} bath adjustment`, val: `+$${surcharge}` });
+      }
+      if (state.freq === 'weekly') {
+        const discount = Math.round(base * 0.10);
+        base = base - discount;
+        breakdown.push({ label: 'Weekly service (10% off)', val: `-$${discount}` });
+        cadence = 'per weekly visit';
+      } else if (state.freq === 'monthly') {
+        base += 20;
+        breakdown.push({ label: 'Monthly service (+$20)', val: '+$20' });
+        cadence = 'per monthly visit';
+      } else { cadence = 'per biweekly visit'; }
+      breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
+    } else if (state.service === 'onetime') {
+      base = ONETIME[bed] || ONETIME[5];
+      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed one-time base`, val: `$${base}` });
+      const surcharge = bathSurcharge(bath);
+      if (surcharge > 0) {
+        base += surcharge;
+        breakdown.push({ label: `${bath === 4 ? '4+' : bath} bath adjustment`, val: `+$${surcharge}` });
+      }
+      breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
+      cadence = 'one-time clean';
+    } else if (state.service === 'moveinout') {
+      base = MOVEINOUT[bed] || MOVEINOUT[5];
+      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed move-in/out base`, val: `$${base}` });
+      const surcharge = bathSurcharge(bath);
+      if (surcharge > 0) {
+        base += surcharge;
+        breakdown.push({ label: `${bath === 4 ? '4+' : bath} bath adjustment`, val: `+$${surcharge}` });
+      }
+      breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
+      cadence = 'one-time service';
+    } else if (state.service === 'airbnb') {
+      base = AIRBNB[bed] || AIRBNB[5];
+      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed Airbnb turnover base`, val: `$${base}` });
+      breakdown.push({ label: 'Turnover handling fee', val: '+$20' });
+      base += 20;
+      breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
+      cadence = 'per turnover';
+    } else if (state.service === 'postconstruction') {
+      const sqft = { 1: 700, 2: 1100, 3: 1600, 4: 2200, 5: 2800 }[bed] || 2800;
+      base = Math.max(350, Math.round(sqft * 0.30));
+      breakdown.push({ label: `~${sqft} sq ft estimate`, val: `$${(sqft * 0.30).toFixed(0)}` });
+      breakdown.push({ label: 'Minimum service', val: '$350' });
+      breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
+      cadence = 'one-time service';
+    }
+
+    return { price: base, cadence, breakdown };
+  }
+
+  function updateStepCount() {
+    const isFourStep = state.service === 'recurring' || state.service === null;
+    const total = isFourStep ? 4 : 3;
+    document.querySelectorAll('.step-eyebrow').forEach((el, i) => {
+      if (i < 3) el.textContent = `Step ${i + 1} of ${total}`;
+    });
+    const track = document.querySelector('.step-track');
+    if (track) track.classList.toggle('three-step', !isFourStep);
+    const next3 = document.getElementById('est-next-3');
+    if (next3) next3.textContent = isFourStep ? 'Continue →' : 'See estimate →';
+  }
+
+  function showStep(n) {
+    $$('.step').forEach(s => s.classList.remove('active'));
+    const activeStep = $(`.step[data-step="${n}"]`);
+    activeStep.classList.add('active');
+    $$('.step-dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i + 1 < n) dot.classList.add('done');
+      else if (i + 1 === n) dot.classList.add('active');
+    });
+    currentStep = n;
+    const q = activeStep.querySelector('.step-question');
+    if (q) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      q.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  function updateSummary() {
+    const setVal = (id, val, fallback) => {
+      const el = $('#' + id);
+      if (val) { el.textContent = val; el.classList.remove('empty'); }
+      else { el.textContent = fallback; el.classList.add('empty'); }
+    };
+    setVal('est-sum-service', state.service ? SERVICE_LABELS[state.service] : null, 'Not selected');
+    setVal('est-sum-bed', state.bed ? (state.bed === '5' ? '5+' : state.bed) : null, '');
+    setVal('est-sum-bath', state.bath ? (state.bath === '4' ? '4+' : state.bath) : null, '');
+
+    const freqEl = $('#est-sum-freq');
+    if (state.service === 'recurring') {
+      if (state.freq) { freqEl.textContent = FREQ_LABELS[state.freq]; freqEl.classList.remove('empty'); }
+      else { freqEl.textContent = ''; freqEl.classList.add('empty'); }
+    } else if (state.service) {
+      freqEl.textContent = 'N/A'; freqEl.classList.add('empty');
+    } else {
+      freqEl.textContent = ''; freqEl.classList.add('empty');
+    }
+  }
+
+  function setupOptionGroup(containerId, attr, stateKey, nextBtnId) {
+    const container = $('#' + containerId);
+    if (!container) return;
+    container.addEventListener('click', (e) => {
+      const opt = e.target.closest('.opt');
+      if (!opt) return;
+      container.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      state[stateKey] = opt.dataset[attr];
+      $('#' + nextBtnId).disabled = false;
+      updateSummary();
+      if (stateKey === 'service') updateStepCount();
+    });
+  }
+
+  setupOptionGroup('service-options', 'service', 'service', 'est-next-1');
+  setupOptionGroup('bed-options', 'bed', 'bed', 'est-next-2');
+  setupOptionGroup('bath-options', 'bath', 'bath', 'est-next-3');
+  setupOptionGroup('freq-options', 'freq', 'freq', 'est-next-4');
+
+  if ($('#est-next-1')) $('#est-next-1').addEventListener('click', () => showStep(2));
+  if ($('#est-next-2')) $('#est-next-2').addEventListener('click', () => showStep(3));
+  if ($('#est-next-3')) $('#est-next-3').addEventListener('click', () => {
+    if (state.service !== 'recurring') showResult();
+    else showStep(4);
+  });
+  if ($('#est-next-4')) $('#est-next-4').addEventListener('click', () => showResult());
+
+  $$('.btn-back').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (currentStep > 1) showStep(currentStep - 1);
+    });
+  });
+
+  function showResult() {
+    const isQuoteRequest = state.bed === '5';
+    $('#est-pre-result').style.display = 'none';
+    $('#est-result').classList.add('active');
+
+    if (isQuoteRequest) {
+      $('#est-result').classList.add('quote-request');
+      $('#est-book-btn').textContent = 'Send Quote Request →';
+      return;
+    }
+
+    $('#est-result').classList.remove('quote-request');
+    $('#est-book-btn').textContent = 'Send Estimate Request →';
+
+    const { price, cadence, breakdown } = calculatePrice();
+    $('#est-price-num').textContent = price;
+    $('#est-price-cadence').textContent = cadence;
+    const html = breakdown.map(b =>
+      `<div class="breakdown-row${b.total ? ' total' : ''}"><span>${b.label}</span><span>${b.val}</span></div>`
+    ).join('');
+    $('#est-breakdown').innerHTML = html;
+    const noteEl = $('#est-result-note');
+    if (noteEl) {
+      const sqft = SQFT_BY_BED[state.bed];
+      noteEl.innerHTML = sqft
+        ? `<strong>Estimate based on whole-home cleaning up to ~${sqft} sq ft.</strong> Final pricing confirmed at walk-through.`
+        : `<strong>Estimate based on whole-home cleaning.</strong> Final pricing confirmed at walk-through.`;
+    }
+  }
+
+  function resetEstimator() {
+    state.service = null; state.bed = null; state.bath = null; state.freq = null;
+    $$('.opt').forEach(o => o.classList.remove('selected'));
+    $$('.btn-next').forEach(b => b.disabled = true);
+    $('#est-result').classList.remove('active', 'confirmed', 'quote-request');
+    $('#est-confirmation').classList.remove('active');
+    $('#est-pre-result').style.display = 'block';
+    $('#est-book-btn').textContent = 'Send Estimate Request →';
+    const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
+    if (confirmTitle) confirmTitle.textContent = 'Estimate request sent.';
+    updateSummary();
+    updateStepCount();
+    showStep(1);
+  }
+
+  if ($('#est-restart-btn')) $('#est-restart-btn').addEventListener('click', resetEstimator);
+  if ($('#est-confirm-restart-btn')) $('#est-confirm-restart-btn').addEventListener('click', resetEstimator);
+
+  if ($('#est-book-btn')) $('#est-book-btn').addEventListener('click', () => {
+    const isQuoteRequest = state.bed === '5';
+    const params = new URLSearchParams({
+      'calc-origin-service': SERVICE_LABELS[state.service] || '',
+      bed: state.bed || '',
+      bath: state.bath || '',
+      freq: state.service === 'recurring' ? (FREQ_LABELS[state.freq] || '') : '',
+      estimate: isQuoteRequest ? '' : $('#est-price-num').textContent
+    });
+
+    const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
+    if (confirmTitle) confirmTitle.textContent = isQuoteRequest ? 'Quote request sent.' : 'Estimate request sent.';
+
+    $('#est-result').classList.add('confirmed');
+    $('#est-confirmation').classList.add('active');
+    $('#est-confirmation').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const fallback = $('#est-fallback-link');
+    if (fallback) fallback.href = 'contact.html?' + params.toString();
+
+    setTimeout(() => {
+      window.location.href = 'contact.html?' + params.toString();
+    }, 1500);
+  });
+})();
+</script>
+
+
+<!-- Scroll reveals (shared across all pages) -->
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduce && 'IntersectionObserver' in window) {
+    var revealEls = document.querySelectorAll('.pricing-intro, .service-block-header, .estimator-header, .contact-method, .contact-hours, .form-title, .trust-badge, .lp-section h2, .lp-crosslinks');
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          en.target.style.opacity = '1';
+          en.target.style.transform = 'translateY(0)';
+          obs.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(function (el) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      obs.observe(el);
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

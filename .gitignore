@@ -1,0 +1,13 @@
+# This repository tracks only the live website: steadfast-v2/
+# Everything else in this working folder (archives, mockups, planning
+# notes, local tooling, OS cruft) stays local and is not uploaded.
+
+# Ignore all top-level items by default...
+/*
+
+# ...except the live site and this .gitignore file.
+!/.gitignore
+!/steadfast-v2/
+
+# Always ignore OS/editor cruft, even inside the site.
+**/.DS_Store
