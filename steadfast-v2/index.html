@@ -1506,11 +1506,11 @@
           "name": "Airbnb Turnover Cleaning",
           "description": "Short-term rental turnover service for Airbnb and VRBO hosts. Includes linen change, full clean, restock check, and same-day turnaround availability for back-to-back bookings."
         },
-        "price": "140",
+        "price": "160",
         "priceCurrency": "USD",
         "priceSpecification": {
           "@type": "PriceSpecification",
-          "price": "140",
+          "price": "160",
           "priceCurrency": "USD",
           "valueAddedTaxIncluded": false,
           "description": "Starting price. Final pricing based on property size and turnover requirements."
@@ -2125,7 +2125,7 @@
       </div>
       <div class="service-name">Airbnb Turnover</div>
       <p class="service-desc">Linen change, full clean, restock check. Fast turnaround for short-term rental hosts.</p>
-      <p class="service-price">From $140</p>
+      <p class="service-price">From $160</p>
     </div>
     <div class="service-card">
       <div class="service-icon-wrap">
@@ -2864,7 +2864,7 @@ document.addEventListener('click', (e) => {
   const RECURRING_BIWEEKLY = { 1: 115, 2: 150, 3: 180, 4: 225, 5: 280 };
   const ONETIME = { 1: 155, 2: 205, 3: 245, 4: 305, 5: 370 };
   const MOVEINOUT = { 1: 250, 2: 295, 3: 350, 4: 425, 5: 500 };
-  const AIRBNB = { 1: 140, 2: 165, 3: 195, 4: 235, 5: 280 };
+  const AIRBNB = { 1: 160, 2: 185, 3: 215, 4: 255, 5: 300 };
   const SQFT_BY_BED = { '1': '700', '2': '1,100', '3': '1,600', '4': '2,200' };
 
   const SERVICE_LABELS = {
@@ -2937,9 +2937,7 @@ document.addEventListener('click', (e) => {
       cadence = 'one-time service';
     } else if (state.service === 'airbnb') {
       base = AIRBNB[bed] || AIRBNB[5];
-      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed Airbnb turnover base`, val: `$${base}` });
-      breakdown.push({ label: 'Turnover handling fee', val: '+$20' });
-      base += 20;
+      breakdown.push({ label: `${bed === 5 ? '5+' : bed} bed Airbnb turnover`, val: `$${base}` });
       breakdown.push({ label: 'Estimated total', val: `$${base}`, total: true });
       cadence = 'per turnover';
     } else if (state.service === 'postconstruction') {
