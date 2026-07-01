@@ -2058,7 +2058,7 @@
         </div>
 
         <div class="result-actions" id="est-result-actions">
-          <button class="btn-book" id="est-book-btn">Send Estimate Request →</button>
+          <button class="btn-book" id="est-book-btn">Continue to Contact Info →</button>
           <button class="btn-restart" id="est-restart-btn">Start Over</button>
         </div>
 
@@ -2068,7 +2068,7 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </div>
-          <h3 class="confirmation-title">Estimate request sent.</h3>
+          <h3 class="confirmation-title">One more step.</h3>
           <p class="confirmation-body">Now we just need your contact info so we can confirm the details and schedule your free walk-through. Redirecting you now.</p>
           <p class="confirmation-meta">Not redirecting? Click <a href="/contact" id="est-fallback-link">here to continue</a>.</p>
         </div>
@@ -3043,12 +3043,12 @@ document.addEventListener('click', (e) => {
 
     if (isQuoteRequest) {
       $('#est-result').classList.add('quote-request');
-      $('#est-book-btn').textContent = 'Send Quote Request →';
+      $('#est-book-btn').textContent = 'Continue to Contact Info →';
       return;
     }
 
     $('#est-result').classList.remove('quote-request');
-    $('#est-book-btn').textContent = 'Send Estimate Request →';
+    $('#est-book-btn').textContent = 'Continue to Contact Info →';
 
     const { price, cadence, breakdown } = calculatePrice();
     $('#est-price-num').textContent = price;
@@ -3073,9 +3073,9 @@ document.addEventListener('click', (e) => {
     $('#est-result').classList.remove('active', 'confirmed', 'quote-request');
     $('#est-confirmation').classList.remove('active');
     $('#est-pre-result').style.display = 'block';
-    $('#est-book-btn').textContent = 'Send Estimate Request →';
+    $('#est-book-btn').textContent = 'Continue to Contact Info →';
     const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
-    if (confirmTitle) confirmTitle.textContent = 'Estimate request sent.';
+    if (confirmTitle) confirmTitle.textContent = 'One more step.';
     updateSummary();
     updateStepCount();
     showStep(1);
@@ -3095,7 +3095,7 @@ document.addEventListener('click', (e) => {
     });
 
     const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
-    if (confirmTitle) confirmTitle.textContent = isQuoteRequest ? 'Quote request sent.' : 'Estimate request sent.';
+    if (confirmTitle) confirmTitle.textContent = 'One more step.';
 
     $('#est-result').classList.add('confirmed');
     $('#est-confirmation').classList.add('active');
