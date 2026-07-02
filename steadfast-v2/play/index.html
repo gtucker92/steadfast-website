@@ -86,7 +86,7 @@
     border: 10px solid var(--purple-dark);
     border-radius: 24px;
     overflow: hidden;
-    background: var(--cream);
+    background: #EFE6D6;
     box-shadow: 0 26px 60px -24px rgba(74, 53, 102, 0.6), 0 4px 14px -8px rgba(74, 53, 102, 0.3);
     touch-action: none;
   }
@@ -346,7 +346,7 @@
       <!-- Start screen. -->
       <div class="overlay" id="startScreen">
         <h2 class="panel-title">Ready to tidy up?</h2>
-        <p class="panel-text">You have 30 seconds. Sweep the broom across the floor to clear dust bunnies, muddy footprints, and cobwebs. Catch the green slime monster for big points, and grab a gold sparkle if one appears.</p>
+        <p class="panel-text">You have 30 seconds. Sweep the floor clear of dust bunnies and muddy boot prints, flick the cobwebs off the walls, catch the goo monster for big points, and grab the gold gem if one appears.</p>
         <button class="btn" id="startBtn">Start sweeping</button>
         <p class="hint">Move your mouse or drag your finger.</p>
         <p class="hint" id="startBest" style="margin-top:6px;"></p>
@@ -381,7 +381,6 @@
 (function () {
   "use strict";
 
-  // Honor reduced motion by thinning out particle counts.
   var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var canvas = document.getElementById("game");
@@ -404,324 +403,251 @@
   var endBest = document.getElementById("endBest");
   var startBest = document.getElementById("startBest");
 
-  // Logical (CSS pixel) size of the canvas, set on resize.
+  var TAU = Math.PI * 2;
+
+  // Logical (CSS pixel) canvas size, set on resize.
   var W = 0, H = 0, dpr = 1;
 
-  // Perspective geometry, recomputed on resize.
-  var PERSP = 2.6;
-  var MINF = 1 / (1 + PERSP);
-  var vpX = 0, vpY = 0;     // vanishing point (above the frame)
-  var frontY = 0, backY = 0;
-  var floorLeft = 0, floorRight = 0;
+  // Isometric room: an 8x8 tile kitchen seen corner-on, bleeding past every
+  // edge of the frame. Items track floor coordinates fx/d in 0..1 which map
+  // onto the tile grid.
+  var N = 8;
+  var TX = 0, TY = 0, ORX = 0, ORY = 0, WALL_H = 0;
 
-  // Cached floor paints, rebuilt on resize so they are not recreated per frame.
-  var floorGrad = null, lightPool = null, vignette = null, horizonGlow = null;
+  function iso(ix, iy, z) {
+    return { x: ORX + (ix - iy) * TX, y: ORY + (ix + iy) * TY - (z || 0) };
+  }
+  function floorPos(fx, d, z) { return iso(fx * N, d * N, z || 0); }
+  function screenToFloor(x, y) {
+    var a = (x - ORX) / TX, b = (y - ORY) / TY;
+    return { ix: (a + b) / 2, iy: (b - a) / 2 };
+  }
 
-  // Pre-rendered kitchen back wall, plus the window position (in scene
-  // coordinates) so the sun shaft can line up with it.
-  var wallCanvas = null, winL = 0, winR = 0, shaftGrad = null;
+  // Static room art, prerendered once per resize. bgCanvas holds the walls
+  // and floor (dirt overlays paint on top of it); fgCanvas holds the
+  // furniture, which must cover the dirt on the tiles behind it.
+  var PAD = 30;   // overscan so camera sway never shows a bare edge
+  var bgCanvas = null;
+  var fgCanvas = null;
+  var goldenGrad = null;
 
-  // Camera: a gentle parallax sway toward the broom, and a dolly-in that
-  // settles as a round starts.
-  var camX = 0, camY = 0;
-  var dolly = 0;
-
-  // Ambience: a global clock for idle animation, dust motes drifting in the
-  // sun shaft, the golden-hour tint that rises in the final seconds, goo
-  // splats left by the slime monster, the round-end polish wave, and the
-  // attract-mode spawner that keeps the room alive behind the overlays.
-  var worldT = 0;
-  var motes = [];
-  var goldenT = 0, goldenGrad = null;
-  var splats = [];
-  var endSweepT = 0;
-  var attractClock = 0;
-  var endTimer = null;
-
-  // Grime layer: a faint coat of dirt over the tiles that the broom wipes
-  // clean. grimePattern holds the full-dirt state; grimeCanvas is the live
-  // layer that gets erased along the broom's path and slowly re-soils.
-  var grimeCanvas = null, grimeCtx = null, grimePattern = null;
-  var GRIME_PAD = 30;   // matches the sway overscan
+  // Per-tile dirt: the floor starts grubby and the broom polishes it tile by
+  // tile. gleams are the white flashes when a tile first comes clean.
+  var dirt = new Float32Array(N * N);
+  var gleams = [];
 
   // Game state.
   var STATE_START = 0, STATE_PLAY = 1, STATE_END = 2;
   var state = STATE_START;
 
-  var ROUND = 30;            // seconds
+  var ROUND = 30;
   var timeLeft = ROUND;
   var score = 0;
-  var best = 0;              // this visitor's best, persisted on their device
+  var best = 0;
   var elapsed = 0;
 
   var items = [];
-  var debris = [];           // flung swept items
-  var flecks = [];           // poof particles
-  var floaters = [];         // "+N" text
-  var trail = [];            // broom motion trail points
+  var debris = [];
+  var flecks = [];
+  var floaters = [];
+  var trail = [];
+  var splats = [];
 
   var spawnClock = 0;
-  var bonusClock = 0;        // separate timer for the rare sparkle bonus
+  var bonusClock = 0;
 
-  // Combo: quick consecutive sweeps build a multiplier that decays if you pause.
   var COMBO_WINDOW = 1.5;
   var comboStreak = 0;
   var comboTimer = 0;
   var comboMult = 1;
 
-  // Final-seconds finale.
   var FINAL_AT = 5;
   var finalAnnounced = false;
-  var banner = null;         // transient centered message {text, life}
+  var banner = null;
 
-  // Broom, in CSS pixels.
+  // Camera: gentle sway toward the broom plus a round-start dolly.
+  var camX = 0, camY = 0;
+  var dolly = 0;
+
+  // Ambience.
+  var worldT = 0;
+  var motes = [];
+  var goldenT = 0;
+  var endSweepT = 0;
+  var attractClock = 0;
+  var endTimer = null;
+
   var broom = {
     x: 0, y: 0, px: 0, py: 0,
-    vx: 0, vy: 0, angle: 0,
+    vx: 0, vy: 0,
     active: false
   };
 
-  // Item type table. The slime monster is the rare, high-value catch.
+  // Item type table. Webs live on the walls; everything else is floor mess.
   var TYPES = {
-    dust:      { value: 1, radius: 15, weight: 0.46 },
-    footprint: { value: 2, radius: 17, weight: 0.27 },
-    web:       { value: 3, radius: 16, weight: 0.15 },
-    slime:     { value: 5, radius: 18, weight: 0.12 },
-    // The sparkle bonus has weight 0: it is never picked by the normal spawner
-    // and is instead released on its own rare timer with a short lifespan.
-    sparkle:   { value: 8, radius: 15, weight: 0 }
+    dust:      { value: 1, radius: 20, weight: 0.46 },
+    footprint: { value: 2, radius: 18, weight: 0.27 },
+    web:       { value: 3, radius: 20, weight: 0.15 },
+    slime:     { value: 5, radius: 24, weight: 0.12 },
+    sparkle:   { value: 8, radius: 18, weight: 0 }
   };
 
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
   function rand(a, b) { return a + Math.random() * (b - a); }
 
-  // Depth maps to a perspective factor. 0 = front (near), 1 = back (far).
-  function depthFactor(d) { return 1 / (1 + d * PERSP); }
-
-  // Normalized frontness: 1 at the front edge, 0 at the back line.
-  function frontness(d) {
-    var f = depthFactor(d);
-    return (f - MINF) / (1 - MINF);
-  }
-
-  function mapY(d) {
-    var t = frontness(d);
-    return backY + (frontY - backY) * t;
-  }
-
-  // fx is a fraction across the floor width at the front edge.
-  function mapX(fx, d) {
-    var t = frontness(d);
-    var frontX = floorLeft + fx * (floorRight - floorLeft);
-    var widthFactor = lerp(0.34, 1.0, t);
-    return vpX + (frontX - vpX) * widthFactor;
-  }
-
-  function renderScale(d) { return lerp(0.5, 1.12, frontness(d)); }
-  function depthBrightness(d) { return lerp(0.6, 1.0, frontness(d)); }
-
-  // Overshoot ease for a satisfying spawn pop.
   function easeOutBack(t) {
     var c1 = 1.70158, c3 = c1 + 1;
     return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
 
+  function poly(c, pts, color) {
+    c.fillStyle = color;
+    c.beginPath();
+    for (var i = 0; i < pts.length; i++) {
+      if (i === 0) c.moveTo(pts[i].x, pts[i].y); else c.lineTo(pts[i].x, pts[i].y);
+    }
+    c.closePath();
+    c.fill();
+  }
+
+  // ---------- Resize & static room ----------
+
   function resize() {
     var r = frame.getBoundingClientRect();
-    W = Math.max(1, r.width - 20);   // subtract the 10px border on each side
+    if (r.width < 60) return;   // collapsed layout — repaint when it has size
+    W = Math.max(1, r.width - 20);
     H = Math.max(1, r.height - 20);
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Vanishing point sits above the top of the frame.
-    vpX = W / 2;
-    vpY = -0.30 * H;
-    backY = 0.16 * H;
-    frontY = 0.99 * H;
-    floorLeft = 0.02 * W;
-    floorRight = 0.98 * W;
+    TX = W * 0.094;
+    TY = W * 0.049;
+    ORX = W * 0.5;
+    ORY = H * 0.19;
+    WALL_H = H * 0.36;
 
-    // Base floor gradient: lighter toward the back.
-    floorGrad = ctx.createLinearGradient(0, backY, 0, frontY);
-    floorGrad.addColorStop(0, "#FFFEFB");
-    floorGrad.addColorStop(1, "#F1EADD");
+    buildBG();
 
-    // Soft warm light pool, as if a lamp lit the middle of the floor.
-    lightPool = ctx.createRadialGradient(W * 0.5, H * 0.52, 0, W * 0.5, H * 0.52, Math.max(W, H) * 0.72);
-    lightPool.addColorStop(0, "rgba(255, 253, 248, 0.55)");
-    lightPool.addColorStop(0.55, "rgba(255, 253, 248, 0.12)");
-    lightPool.addColorStop(1, "rgba(255, 253, 248, 0)");
-
-    // Glow where the floor meets the back wall.
-    horizonGlow = ctx.createLinearGradient(0, backY - H * 0.06, 0, backY + H * 0.16);
-    horizonGlow.addColorStop(0, "rgba(196, 168, 232, 0)");
-    horizonGlow.addColorStop(0.5, "rgba(196, 168, 232, 0.12)");
-    horizonGlow.addColorStop(1, "rgba(196, 168, 232, 0)");
-
-    // Vignette to settle the edges and focus the eye.
-    vignette = ctx.createRadialGradient(W * 0.5, H * 0.46, H * 0.22, W * 0.5, H * 0.52, H * 0.82);
-    vignette.addColorStop(0, "rgba(74, 53, 102, 0)");
-    vignette.addColorStop(1, "rgba(74, 53, 102, 0.15)");
-
-    buildWall();
-    buildGrime();
-
-    // Warm shaft of daylight falling from the window onto the tiles.
-    shaftGrad = ctx.createLinearGradient(0, backY, 0, H * 0.82);
-    shaftGrad.addColorStop(0, "rgba(255, 243, 208, 0.20)");
-    shaftGrad.addColorStop(1, "rgba(255, 243, 208, 0)");
-
-    // Late-afternoon tint for the final seconds, warmest near the horizon.
     goldenGrad = ctx.createLinearGradient(0, 0, 0, H);
     goldenGrad.addColorStop(0, "rgba(255, 168, 92, 0.22)");
     goldenGrad.addColorStop(0.4, "rgba(255, 178, 102, 0.12)");
     goldenGrad.addColorStop(1, "rgba(255, 150, 100, 0.06)");
 
-    // Dust motes that drift down through the sun shaft.
     motes = [];
     if (!REDUCED) {
-      var mcount = clamp(Math.round(W * H / 15000), 12, 30);
-      for (var mi = 0; mi < mcount; mi++) {
-        motes.push({
-          u: Math.random(),
-          v: Math.random(),
-          spd: rand(0.02, 0.06),
-          r: rand(0.8, 2.0),
-          ph: rand(0, Math.PI * 2)
-        });
+      for (var mi = 0; mi < 6; mi++) {
+        motes.push({ u: Math.random(), v: Math.random(), spd: rand(0.03, 0.07), r: rand(2, 4), ph: rand(0, TAU) });
       }
     }
   }
 
-  // Scatter soft dirt blotches across the floor in perspective (smaller and
-  // dimmer toward the back), then copy them onto the live grime layer.
-  function buildGrime() {
-    var GW = W + GRIME_PAD * 2;
-    grimePattern = document.createElement("canvas");
-    grimePattern.width = Math.max(1, Math.round(GW * dpr));
-    grimePattern.height = Math.max(1, Math.round(H * dpr));
-    var g = grimePattern.getContext("2d");
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Everything that never changes: walls, window, furniture, lamp, tiles.
+  function buildBG() {
+    bgCanvas = document.createElement("canvas");
+    bgCanvas.width = Math.max(1, Math.round((W + PAD * 2) * dpr));
+    bgCanvas.height = Math.max(1, Math.round((H + PAD * 2) * dpr));
+    var c = bgCanvas.getContext("2d");
+    c.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
 
-    for (var i = 0; i < 260; i++) {
-      var d = Math.random();
-      var y = mapY(d) + rand(-5, 5);
-      var x = mapX(rand(-1.3, 2.3), d) + GRIME_PAD;
-      if (x < -20 || x > GW + 20 || y < backY + 4) continue;
-      var s = renderScale(d);
-      var rx = rand(7, 22) * s;
-      g.fillStyle = "rgba(122, 106, 88, " + rand(0.05, 0.11).toFixed(3) + ")";
-      g.beginPath();
-      g.ellipse(x, y, rx, rx * rand(0.35, 0.55), rand(-0.4, 0.4), 0, Math.PI * 2);
-      g.fill();
-      // A darker speck inside some blotches.
-      if (Math.random() < 0.4) {
-        g.fillStyle = "rgba(100, 84, 66, 0.12)";
-        g.beginPath();
-        g.arc(x + rand(-4, 4), y + rand(-2, 2), rand(1, 3) * s, 0, Math.PI * 2);
-        g.fill();
+    // background wash
+    var bgw = c.createLinearGradient(0, -PAD, 0, H + PAD);
+    bgw.addColorStop(0, "#F6F0E6");
+    bgw.addColorStop(1, "#EDE4D4");
+    c.fillStyle = bgw;
+    c.fillRect(-PAD, -PAD, W + PAD * 2, H + PAD * 2);
+
+    function bpoly(pts, color) { poly(c, pts, color); }
+
+    // walls, cropped by the frame
+    bpoly([iso(0,0,WALL_H*2), iso(0,N+4,WALL_H), iso(0,N+4,0), iso(0,0,0)], "#CBB9DC");
+    bpoly([iso(0,0,WALL_H*2), iso(N+4,0,WALL_H), iso(N+4,0,0), iso(0,0,0)], "#F4E9D4");
+    bpoly([iso(0,0,14), iso(0,N+4,14), iso(0,N+4,0), iso(0,0,0)], "#B9A6CE");
+    bpoly([iso(0,0,14), iso(N+4,0,14), iso(N+4,0,0), iso(0,0,0)], "#E3D4B8");
+
+    // window with sun on the right wall
+    function wallA(ix, z) { return iso(ix, 0, z); }
+    function wallB(iy, z) { return iso(0, iy, z); }
+    bpoly([wallA(3.6,WALL_H*0.88), wallA(6.4,WALL_H*0.88), wallA(6.4,WALL_H*0.34), wallA(3.6,WALL_H*0.34)], "#C9B285");
+    bpoly([wallA(3.75,WALL_H*0.845), wallA(6.25,WALL_H*0.845), wallA(6.25,WALL_H*0.375), wallA(3.75,WALL_H*0.375)], "#FFE9A0");
+    bpoly([wallA(4.93,WALL_H*0.845), wallA(5.07,WALL_H*0.845), wallA(5.07,WALL_H*0.375), wallA(4.93,WALL_H*0.375)], "#C9B285");
+    bpoly([wallA(3.75,WALL_H*0.625), wallA(6.25,WALL_H*0.625), wallA(6.25,WALL_H*0.595), wallA(3.75,WALL_H*0.595)], "#C9B285");
+    bpoly([wallA(3.3,WALL_H*0.95), wallA(6.7,WALL_H*0.95), wallA(7.1,WALL_H*0.28), wallA(2.9,WALL_H*0.28)], "rgba(255,230,150,0.14)");
+
+    // picture on the left wall
+    bpoly([wallB(4.6,WALL_H*0.82), wallB(6.2,WALL_H*0.82), wallB(6.2,WALL_H*0.50), wallB(4.6,WALL_H*0.50)], "#C9B285");
+    bpoly([wallB(4.75,WALL_H*0.785), wallB(6.05,WALL_H*0.785), wallB(6.05,WALL_H*0.535), wallB(4.75,WALL_H*0.535)], "#F2E4F0");
+    bpoly([wallB(5.1,WALL_H*0.70), wallB(5.6,WALL_H*0.73), wallB(5.75,WALL_H*0.60), wallB(5.25,WALL_H*0.57)], "#C89BC4");
+
+    // floor: chunky checker tiles spilling past the frame
+    for (var ix = 0; ix < N + 4; ix++) {
+      for (var iy = 0; iy < N + 4; iy++) {
+        var pt = iso(ix, iy);
+        if (pt.x < -PAD - TX * 2 || pt.x > W + PAD + TX * 2 || pt.y > H + PAD + TY * 3) continue;
+        bpoly([iso(ix,iy), iso(ix+1,iy), iso(ix+1,iy+1), iso(ix,iy+1)], ((ix+iy)%2===0) ? "#FDF8ED" : "#EBDFC6");
+        c.strokeStyle = "rgba(255,255,255,0.5)";
+        c.lineWidth = 2;
+        var e0 = iso(ix,iy), e1 = iso(ix+1,iy);
+        c.beginPath(); c.moveTo(e0.x, e0.y); c.lineTo(e1.x, e1.y); c.stroke();
       }
     }
+    // AO at wall bases + furniture cast shadows
+    bpoly([iso(0,0), iso(N+4,0), iso(N+4,0.4), iso(0.4,0.4)], "rgba(74,53,102,0.10)");
+    bpoly([iso(0,0), iso(0,N+4), iso(0.4,N+4), iso(0.4,0.4)], "rgba(74,53,102,0.15)");
+    bpoly([iso(0.2,2.4), iso(1.7,2.4), iso(2.25,2.95), iso(0.75,2.95)], "rgba(74,53,102,0.14)");
+    bpoly([iso(3.2,1.0), iso(6.9,1.0), iso(7.3,1.4), iso(3.6,1.4)], "rgba(74,53,102,0.10)");
+    // warm pools from the window
+    bpoly([iso(3.4,0.4), iso(6.6,0.4), iso(7.6,3.4), iso(4.4,3.6)], "rgba(255,233,150,0.18)");
+    bpoly([iso(4.2,0.4), iso(6.0,0.4), iso(6.6,2.4), iso(4.8,2.5)], "rgba(255,233,150,0.16)");
 
-    grimeCanvas = document.createElement("canvas");
-    grimeCanvas.width = grimePattern.width;
-    grimeCanvas.height = grimePattern.height;
-    grimeCtx = grimeCanvas.getContext("2d");
-    grimeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    resetGrime();
-  }
+    // lamp light pool on the floor (under the dirt, like the sun pools)
+    bpoly([iso(0.8,3.6), iso(2.4,2.0), iso(4.0,3.6), iso(2.4,5.2)], "rgba(255,236,170,0.13)");
+    bpoly([iso(1.5,3.6), iso(2.4,2.7), iso(3.3,3.6), iso(2.4,4.5)], "rgba(255,236,170,0.18)");
 
-  function resetGrime() {
-    if (!grimeCtx) return;
-    var GW = W + GRIME_PAD * 2;
-    grimeCtx.globalCompositeOperation = "source-over";
-    grimeCtx.globalAlpha = 1;
-    grimeCtx.clearRect(0, 0, GW, H);
-    grimeCtx.drawImage(grimePattern, 0, 0, GW, H);
-  }
-
-  // The back wall never changes, so it is drawn once per resize onto its own
-  // canvas: cabinets and a countertop along the far end, a sunlit window, and
-  // a potted plant. Built 60px wider than the frame so camera sway and shake
-  // never reveal its edges.
-  function buildWall() {
-    var WW = W + 60;
-    var WH = Math.max(1, backY);
-    wallCanvas = document.createElement("canvas");
-    wallCanvas.width = Math.max(1, Math.round(WW * dpr));
-    wallCanvas.height = Math.max(1, Math.round(WH * dpr));
-    var c = wallCanvas.getContext("2d");
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Wall base, lighter toward the ceiling.
-    var wg = c.createLinearGradient(0, 0, 0, WH);
-    wg.addColorStop(0, "#F2EADC");
-    wg.addColorStop(1, "#E7DDCC");
-    c.fillStyle = wg;
-    c.fillRect(0, 0, WW, WH);
-
-    // Lower cabinets and countertop.
-    var counterY = WH * 0.55;
-    c.fillStyle = "#DED2BD";
-    c.fillRect(0, counterY, WW, WH - counterY);
-    c.fillStyle = "#F8F2E6";
-    c.fillRect(0, counterY, WW, 3);
-    c.fillStyle = "rgba(74, 53, 102, 0.10)";
-    c.fillRect(0, counterY + 3, WW, 4);
-
-    // Cabinet door seams and handles.
-    var doorW = WW / 9;
-    c.strokeStyle = "rgba(74, 53, 102, 0.14)";
-    c.lineWidth = 1.5;
-    for (var i = 1; i < 9; i++) {
-      c.beginPath();
-      c.moveTo(i * doorW, counterY + 8);
-      c.lineTo(i * doorW, WH);
-      c.stroke();
+    // ---- Furniture layer: drawn over the dirt overlays each frame ----
+    fgCanvas = document.createElement("canvas");
+    fgCanvas.width = bgCanvas.width;
+    fgCanvas.height = bgCanvas.height;
+    var g = fgCanvas.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
+    function gpoly(pts, color) { poly(g, pts, color); }
+    function vox(x0, y0, x1, y1, z0, z1, cT, cR, cL) {
+      gpoly([iso(x0,y0,z1), iso(x1,y0,z1), iso(x1,y1,z1), iso(x0,y1,z1)], cT);
+      gpoly([iso(x1,y0,z1), iso(x1,y1,z1), iso(x1,y1,z0), iso(x1,y0,z0)], cR);
+      gpoly([iso(x0,y1,z1), iso(x1,y1,z1), iso(x1,y1,z0), iso(x0,y1,z0)], cL);
     }
-    c.fillStyle = "rgba(74, 53, 102, 0.30)";
-    for (var h = 0; h < 9; h++) {
-      c.fillRect(h * doorW + doorW / 2 - 4, counterY + 12, 8, 2.4);
+    // fridge
+    vox(0.2, 0.7, 1.7, 2.4, 0, WALL_H*0.80, "#F7F2FB", "#E6DDF1", "#CEC0E0");
+    g.strokeStyle = "rgba(74,53,102,0.25)"; g.lineWidth = 2.5;
+    var fs0 = iso(1.7, 0.85, WALL_H*0.52), fs1 = iso(1.7, 2.25, WALL_H*0.52);
+    g.beginPath(); g.moveTo(fs0.x, fs0.y); g.lineTo(fs1.x, fs1.y); g.stroke();
+    g.lineWidth = 5; g.strokeStyle = "#6B5A85"; g.lineCap = "round";
+    var fh0 = iso(1.7, 1.05, WALL_H*0.56), fh1 = iso(1.7, 1.05, WALL_H*0.68);
+    g.beginPath(); g.moveTo(fh0.x, fh0.y); g.lineTo(fh1.x, fh1.y); g.stroke();
+
+    // counter + plant + kettle
+    vox(3.2, 0.15, 6.9, 1.0, 0, WALL_H*0.34, "#F2E5C9", "#E2D3B2", "#CDBB98");
+    g.fillStyle = "#8A7A9E";
+    for (var hh = 0; hh < 3; hh++) {
+      var hc = iso(4.0 + hh*1.1, 1.0, WALL_H*0.24);
+      g.fillRect(hc.x-9, hc.y-2.5, 18, 5);
     }
+    vox(3.5, 0.35, 3.95, 0.8, WALL_H*0.34, WALL_H*0.43, "#C99979", "#B98A6B", "#A87A5C");
+    vox(3.42, 0.27, 4.03, 0.88, WALL_H*0.43, WALL_H*0.62, "#8FB570", "#7BA05B", "#66884A");
+    vox(6.0, 0.4, 6.55, 0.85, WALL_H*0.34, WALL_H*0.50, "#8A5FCB", "#7B4FBE", "#5B4380");
+    var kp = iso(6.0, 0.62, WALL_H*0.46);
+    gpoly([{x:kp.x,y:kp.y},{x:kp.x-10,y:kp.y-3},{x:kp.x-10,y:kp.y+4},{x:kp.x,y:kp.y+5}], "#5B4380");
 
-    // Window over the counter, glowing with daylight. Its horizontal span is
-    // stored in scene coordinates (the wall is drawn at x = -30) for the shaft.
-    var wx = WW * 0.30, wy = WH * 0.10, ww = WW * 0.22;
-    var wh = Math.max(8, counterY - wy - WH * 0.06);
-    winL = wx - 30;
-    winR = wx + ww - 30;
-    c.fillStyle = "#CBBBA0";
-    c.fillRect(wx - 4, wy - 4, ww + 8, wh + 8);
-    var pg = c.createLinearGradient(wx, wy, wx + ww, wy + wh);
-    pg.addColorStop(0, "#FFF8E0");
-    pg.addColorStop(1, "#FFE9B5");
-    c.fillStyle = pg;
-    c.fillRect(wx, wy, ww, wh);
-    c.strokeStyle = "#CBBBA0";
-    c.lineWidth = 3;
-    c.beginPath();
-    c.moveTo(wx + ww / 2, wy); c.lineTo(wx + ww / 2, wy + wh);
-    c.moveTo(wx, wy + wh / 2); c.lineTo(wx + ww, wy + wh / 2);
-    c.stroke();
-    c.fillStyle = "#F8F2E6";
-    c.fillRect(wx - 6, wy + wh + 4, ww + 12, 3);
-
-    // Potted plant on the counter.
-    var px = WW * 0.68, py = counterY;
-    c.fillStyle = "#C08A6B";
-    c.beginPath();
-    c.moveTo(px - 7, py - 12); c.lineTo(px + 7, py - 12);
-    c.lineTo(px + 5, py); c.lineTo(px - 5, py);
-    c.closePath();
-    c.fill();
-    c.fillStyle = "#7BA05B";
-    c.beginPath(); c.ellipse(px - 5, py - 18, 5, 8, -0.5, 0, Math.PI * 2); c.fill();
-    c.beginPath(); c.ellipse(px + 5, py - 19, 5, 8, 0.5, 0, Math.PI * 2); c.fill();
-    c.fillStyle = "#8FB570";
-    c.beginPath(); c.ellipse(px, py - 22, 4.5, 9, 0, 0, Math.PI * 2); c.fill();
+    // pendant lamp over the open floor
+    var lp = iso(2.4, 3.6, H*0.315);
+    g.strokeStyle = "#4A3566"; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(lp.x, -PAD - 12); g.lineTo(lp.x, lp.y); g.stroke();
+    gpoly([{x:lp.x-21,y:lp.y+24},{x:lp.x-5,y:lp.y},{x:lp.x,y:lp.y},{x:lp.x,y:lp.y+24}], "#8A5FCB");
+    gpoly([{x:lp.x,y:lp.y+24},{x:lp.x,y:lp.y},{x:lp.x+5,y:lp.y},{x:lp.x+21,y:lp.y+24}], "#5B4380");
+    g.fillStyle = "#FFEBB0";
+    g.beginPath(); g.ellipse(lp.x, lp.y+26, 14, 4, 0, 0, TAU); g.fill();
   }
 
   // ---------- Sound (off by default, no libraries) ----------
@@ -779,7 +705,6 @@
   }
 
   function sparkleChime() {
-    // A quick ascending three-note shimmer for the slime and the bonus.
     blip(740, 0.14, "triangle", 0.10);
     setTimeout(function () { blip(990, 0.14, "triangle", 0.10); }, 60);
     setTimeout(function () { blip(1320, 0.18, "triangle", 0.10); }, 120);
@@ -789,7 +714,6 @@
     muted = next;
     soundToggle.setAttribute("aria-pressed", String(!muted));
     soundLabel.textContent = muted ? "Sound off" : "Sound on";
-    // Swap the icon between muted (with cross) and on (with waves).
     soundIcon.innerHTML = muted
       ? '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>'
       : '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
@@ -809,21 +733,49 @@
 
   function spawnItem() {
     var kind = pickType();
-    var a = rand(0, Math.PI * 2);
-    var d = rand(0.08, 0.94);
+    if (kind === "web") {
+      // Cobwebs live on the walls, spread across both of them. On the right
+      // wall they land either side of the window; on the left they can sit
+      // anywhere clear of the fridge (over the picture frame is fair game).
+      var onRight = Math.random() < 0.5;
+      var wt;
+      if (onRight) {
+        wt = Math.random() < 0.65 ? rand(0.05, 0.42) : rand(0.82, 0.96);
+      } else {
+        wt = rand(0.33, 0.96);
+      }
+      items.push({
+        kind: "web",
+        wall: onRight ? "R" : "L",
+        wt: wt,
+        wz: rand(0.30, 0.92),
+        wscale: rand(0.85, 1.35),
+        born: 0,
+        seed: rand(0, TAU),
+        h: 0, vh: 0, squashT: 0, hopT: 0, fx: 0, d: 0
+      });
+      return;
+    }
+    var a = rand(0, TAU);
+    // Keep floor items out of the furniture footprints (fridge and counter
+    // sit against the walls, so require some depth or some distance right).
+    var fx = 0, d = 0, tries = 0;
+    do {
+      fx = rand(0.10, 0.92);
+      d = rand(0.14, 0.92);
+      tries++;
+    } while (tries < 8 && ((fx * N < 2.1 && d * N < 2.9) || (fx * N > 2.7 && d * N < 1.5)));
     items.push({
       kind: kind,
-      fx: rand(0.08, 0.92),
+      fx: fx,
       d: d,
       born: 0,
-      seed: rand(0, Math.PI * 2),
-      // Floor-space wander velocity. Only the slime monster actually roams.
+      seed: rand(0, TAU),
       vfx: Math.cos(a) * 0.17,
       vd: Math.sin(a) * 0.13,
       flip: a < Math.PI ? 1 : -1,
-      // Vertical physics: items with volume drop in from above and bounce.
-      // Footprints stamp in flat (they are stains, not objects).
-      h: (REDUCED || kind === "footprint") ? 0 : rand(180, 300) * renderScale(d),
+      // Volumetric items drop in from above and land with a bounce.
+      h: (REDUCED || kind === "footprint") ? 0 : rand(180, 300),
       vh: 0,
       squashT: 0,
       hopT: rand(0.4, 1.0)
@@ -833,22 +785,19 @@
   function spawnSparkle() {
     items.push({
       kind: "sparkle",
-      fx: rand(0.14, 0.86),
+      fx: rand(0.15, 0.85),
       d: rand(0.2, 0.85),
       born: 0,
-      seed: rand(0, Math.PI * 2),
-      ttl: 3.0,   // disappears if not swept in time
+      seed: rand(0, TAU),
+      ttl: 3.0,
       vfx: 0, vd: 0, flip: 1,
       h: 0, vh: 0, squashT: 0, hopT: 0
     });
   }
 
-  function difficulty() {
-    return clamp(elapsed / ROUND, 0, 1);
-  }
+  function difficulty() { return clamp(elapsed / ROUND, 0, 1); }
 
   function spawnInterval() {
-    // Speeds up as the round goes on, then surges for the final-seconds rush.
     if (timeLeft <= FINAL_AT) return 0.18;
     return lerp(0.85, 0.36, difficulty());
   }
@@ -858,13 +807,21 @@
     return Math.round(lerp(5, 9, difficulty()));
   }
 
+  // Screen position for any item, floor or wall.
+  function itemPos(it) {
+    if (it.kind === "web") {
+      var t = it.wt * N;
+      return it.wall === "R" ? iso(t, 0, it.wz * WALL_H) : iso(0, t, it.wz * WALL_H);
+    }
+    return floorPos(it.fx, it.d, it.h);
+  }
+
   // ---------- Sweep / fling ----------
 
   function sweepItem(item, idx, contactX, contactY) {
     var info = TYPES[item.kind];
     var special = item.kind === "sparkle";
 
-    // Combo: sweeping again before the window lapses raises the multiplier.
     if (comboTimer > 0) comboStreak++; else comboStreak = 1;
     comboTimer = COMBO_WINDOW;
     comboMult = Math.min(5, Math.floor((comboStreak - 1) / 2) + 1);
@@ -872,26 +829,19 @@
     var gained = info.value * comboMult;
     score += gained;
     hudScore.textContent = score;
-    // Bump the score pill; removing and re-adding the class retriggers it.
     var scorePill = hudScore.parentNode;
     scorePill.classList.remove("bump");
     void scorePill.offsetWidth;
     scorePill.classList.add("bump");
 
-    // Sound: a sweep whoosh plus a per-item note, with a shimmer for the
-    // slime monster and the sparkle bonus.
     whoosh();
     if (special || item.kind === "slime") sparkleChime();
     else blip(360 + info.value * 90, 0.12, "triangle", 0.10);
 
-    // Haptic tap on devices that support it (Android); a longer buzz for the
-    // slime monster and the sparkle bonus.
     if (navigator.vibrate) {
       navigator.vibrate(special || item.kind === "slime" ? 24 : 10);
     }
 
-    // Fling direction: use the broom velocity, or push away from the
-    // broom center when the broom is nearly still.
     var speed = Math.hypot(broom.vx, broom.vy);
     var dirx, diry;
     if (speed > 90) {
@@ -911,23 +861,20 @@
       y: contactY,
       vx: dirx * launch + rand(-60, 60),
       vy: diry * launch * 0.7 + rand(-60, 60),
-      // Kicked upward so the piece arcs and bounces off the tiles.
       h: 1,
       vh: REDUCED ? 0 : rand(260, 560),
       bounces: 0,
-      rot: rand(0, Math.PI * 2),
+      rot: rand(0, TAU),
       vr: rand(-14, 14),
-      scale: renderScale(item.d),
+      scale: 1,
       kind: item.kind,
       life: 1,
       seed: item.seed
     });
 
-    // Poof of flecks at the contact point. Gold for the sparkle bonus,
-    // pink and green otherwise.
     var count = REDUCED ? (special ? 8 : 5) : (special ? 26 : 16);
     for (var i = 0; i < count; i++) {
-      var a = rand(0, Math.PI * 2);
+      var a = rand(0, TAU);
       var sp = rand(40, special ? 320 : 260);
       flecks.push({
         x: contactX,
@@ -954,25 +901,20 @@
 
   function checkSweeps() {
     if (!broom.active) return;
-    // The broom only collects while it is actually moving, so parking it on
-    // a spawn point sweeps nothing.
     if (Math.hypot(broom.vx, broom.vy) < 60) return;
-    // Contact circle sits on the bristles, which are drawn below and slightly
-    // left of the pointer, not at the handle grip point.
-    var broomR = 30;
-    var bx = broom.x - 2;
-    var by = broom.y + 20;
+    // Contact circle sits on the chunky bristle head below the grip point.
+    var broomR = 34;
+    var bx = broom.x - 6;
+    var by = broom.y + 26;
     for (var i = items.length - 1; i >= 0; i--) {
       var it = items[i];
-      // Items still falling in are out of the broom's reach.
-      if (it.h > 24) continue;
-      var sx = mapX(it.fx, it.d);
-      var sy = mapY(it.d);
-      var ir = TYPES[it.kind].radius * renderScale(it.d);
-      var dx = sx - bx;
-      var dy = sy - by;
+      if (it.h > 24) continue;   // still falling in
+      var p = itemPos(it);
+      var ir = TYPES[it.kind].radius;
+      var dx = p.x - bx;
+      var dy = p.y - by;
       if (dx * dx + dy * dy < (broomR + ir) * (broomR + ir)) {
-        sweepItem(it, i, sx, sy);
+        sweepItem(it, i, p.x, p.y);
       }
     }
   }
@@ -992,7 +934,6 @@
         if (items.length < concurrentCap()) spawnItem();
       }
 
-      // Rare sparkle bonus: at most one out at a time, only before the finale.
       bonusClock += dt;
       if (bonusClock >= 9 && timeLeft > FINAL_AT) {
         bonusClock = 0;
@@ -1003,7 +944,6 @@
         if (!hasSparkle) spawnSparkle();
       }
 
-      // Combo multiplier decays once the window lapses.
       if (comboTimer > 0) {
         comboTimer -= dt;
         if (comboTimer <= 0) { comboStreak = 0; comboMult = 1; }
@@ -1015,7 +955,6 @@
         hudCombo.classList.remove("show");
       }
 
-      // Final-seconds finale: warn the timer and announce the rush once.
       if (timeLeft <= FINAL_AT) {
         hudTime.parentNode.classList.add("warn");
         if (!finalAnnounced) {
@@ -1026,31 +965,42 @@
 
       checkSweeps();
 
-      // Wipe the grime layer clean along the broom's path. broom.px/py still
-      // hold last frame's position here, so the stamps cover the full stroke.
-      if (broom.active && grimeCtx && Math.hypot(broom.vx, broom.vy) > 60) {
+      // Polish the tiles under the moving broom. broom.px/py still hold last
+      // frame's position, so the stroke covers the whole segment.
+      if (broom.active && Math.hypot(broom.vx, broom.vy) > 60) {
         var seg = Math.hypot(broom.x - broom.px, broom.y - broom.py);
-        var steps = Math.max(1, Math.ceil(seg / 14));
-        grimeCtx.globalCompositeOperation = "destination-out";
+        var steps = Math.max(1, Math.ceil(seg / 18));
         for (var gi = 0; gi <= steps; gi++) {
-          var gx = lerp(broom.px, broom.x, gi / steps) - 2 + GRIME_PAD;
-          var gy = lerp(broom.py, broom.y, gi / steps) + 20;
-          var gr = grimeCtx.createRadialGradient(gx, gy, 0, gx, gy, 34);
-          gr.addColorStop(0, "rgba(0, 0, 0, 0.5)");
-          gr.addColorStop(1, "rgba(0, 0, 0, 0)");
-          grimeCtx.fillStyle = gr;
-          grimeCtx.beginPath();
-          grimeCtx.arc(gx, gy, 34, 0, Math.PI * 2);
-          grimeCtx.fill();
+          var gx = lerp(broom.px, broom.x, gi / steps) - 6;
+          var gy = lerp(broom.py, broom.y, gi / steps) + 26;
+          var fp = screenToFloor(gx, gy);
+          var tx = Math.floor(fp.ix), ty = Math.floor(fp.iy);
+          if (tx >= 0 && tx < N && ty >= 0 && ty < N) {
+            var ti = ty * N + tx;
+            if (dirt[ti] > 0) {
+              dirt[ti] = Math.max(0, dirt[ti] - dt * 2.6 / (steps + 1) * 8);
+              if (dirt[ti] === 0) {
+                gleams.push({ ix: tx, iy: ty, life: 1 });
+                if (!REDUCED) {
+                  var gc = iso(tx + 0.5, ty + 0.5);
+                  for (var gf = 0; gf < 3; gf++) {
+                    flecks.push({
+                      x: gc.x + rand(-14, 14), y: gc.y + rand(-8, 8),
+                      vx: rand(-30, 30), vy: rand(-140, -60),
+                      r: rand(2, 3.5), color: Math.random() < 0.5 ? "#FFFFFF" : "#F0C75E",
+                      life: 1
+                    });
+                  }
+                }
+              }
+            }
+          }
         }
-        grimeCtx.globalCompositeOperation = "source-over";
       }
 
-      // The floor slowly re-soils, so cleaned streaks fade back over time.
-      if (grimeCtx) {
-        grimeCtx.globalAlpha = Math.min(1, dt * 0.04);
-        grimeCtx.drawImage(grimePattern, 0, 0, W + GRIME_PAD * 2, H);
-        grimeCtx.globalAlpha = 1;
+      // The floor slowly re-soils, so there is always more to polish.
+      for (var di = 0; di < dirt.length; di++) {
+        if (dirt[di] < 0.6) dirt[di] = Math.min(0.6, dirt[di] + dt * 0.012);
       }
 
       if (timeLeft <= 0) endRound();
@@ -1070,21 +1020,14 @@
       var m = items[i];
       m.born += dt;
 
-      // Vertical physics: gravity pulls dropping items down; they land
-      // with a bounce and a squash.
       if (m.h > 0 || m.vh !== 0) {
         m.vh -= 1500 * dt;
         m.h += m.vh * dt;
         if (m.h <= 0) {
           m.h = 0;
-          // The slime monster smacks down a little goo where it lands.
+          // The goo monster smacks down a splat where it lands.
           if (m.kind === "slime" && m.vh < -80) {
-            splats.push({
-              x: mapX(m.fx, m.d) + rand(-6, 6),
-              y: mapY(m.d) + 10 * renderScale(m.d),
-              r: rand(3, 6) * renderScale(m.d),
-              life: 1
-            });
+            splats.push({ fx: m.fx, d: m.d, life: 1 });
             if (splats.length > 24) splats.shift();
           }
           if (m.vh < -150) {
@@ -1098,8 +1041,6 @@
       }
       if (m.squashT > 0) m.squashT = Math.max(0, m.squashT - dt);
 
-      // The slime monster crosses the floor in little hops, drifting only
-      // while it is in the air.
       if (m.kind === "slime") {
         if (!REDUCED && m.h === 0 && m.vh === 0) {
           m.hopT -= dt;
@@ -1113,24 +1054,28 @@
           var drift = REDUCED ? 1 : 2.2;
           m.fx += m.vfx * drift * dt;
           m.d += m.vd * drift * dt;
-          if (m.fx < 0.06) { m.fx = 0.06; m.vfx = Math.abs(m.vfx); }
-          if (m.fx > 0.94) { m.fx = 0.94; m.vfx = -Math.abs(m.vfx); }
-          if (m.d < 0.06) { m.d = 0.06; m.vd = Math.abs(m.vd); }
-          if (m.d > 0.95) { m.d = 0.95; m.vd = -Math.abs(m.vd); }
+          // Stay clear of the furniture footprints along the walls.
+          if (m.fx < 0.27) { m.fx = 0.27; m.vfx = Math.abs(m.vfx); }
+          if (m.fx > 0.92) { m.fx = 0.92; m.vfx = -Math.abs(m.vfx); }
+          if (m.d < 0.20) { m.d = 0.20; m.vd = Math.abs(m.vd); }
+          if (m.d > 0.92) { m.d = 0.92; m.vd = -Math.abs(m.vd); }
           m.flip = m.vfx >= 0 ? 1 : -1;
         }
       }
-      // The sparkle bonus vanishes if it is not swept in time.
       if (m.kind === "sparkle" && m.born >= m.ttl) items.splice(i, 1);
     }
 
-    // Goo splats dry up.
+    // Splats dry up; gleam flashes fade.
     for (var si = splats.length - 1; si >= 0; si--) {
-      splats[si].life -= dt * 0.7;
+      splats[si].life -= dt * 0.5;
       if (splats[si].life <= 0) splats.splice(si, 1);
     }
+    for (var gl = gleams.length - 1; gl >= 0; gl--) {
+      gleams[gl].life -= dt * 1.6;
+      if (gleams[gl].life <= 0) gleams.splice(gl, 1);
+    }
 
-    // Dust motes sink through the sun shaft and recycle at the top.
+    // Dust motes sink through the window light.
     for (var mo = 0; mo < motes.length; mo++) {
       motes[mo].v += motes[mo].spd * dt;
       if (motes[mo].v > 1) { motes[mo].v = 0; motes[mo].u = Math.random(); }
@@ -1140,22 +1085,23 @@
     var goldenTarget = (state === STATE_PLAY && timeLeft <= FINAL_AT) ? 1 : 0;
     goldenT = lerp(goldenT, goldenTarget, clamp(dt * 1.5, 0, 1));
 
-    // Round-end polish wave: a band crosses the floor wiping the grime and
-    // throwing up gold sparkles as it goes.
+    // Round-end polish wave: cleans every tile it crosses, trailing sparkles.
     if (endSweepT > 0) {
-      var wavePrev = lerp(-80, W + 80, 1 - endSweepT);
       endSweepT = Math.max(0, endSweepT - dt / 0.9);
       var waveX = lerp(-80, W + 80, 1 - endSweepT);
-      if (grimeCtx) {
-        grimeCtx.globalCompositeOperation = "destination-out";
-        grimeCtx.fillStyle = "rgba(0, 0, 0, 1)";
-        grimeCtx.fillRect(wavePrev - 40 + GRIME_PAD, 0, (waveX - wavePrev) + 80, H);
-        grimeCtx.globalCompositeOperation = "source-over";
+      for (var wt = 0; wt < N * N; wt++) {
+        if (dirt[wt] > 0) {
+          var wc = iso((wt % N) + 0.5, Math.floor(wt / N) + 0.5);
+          if (wc.x < waveX) {
+            dirt[wt] = 0;
+            gleams.push({ ix: wt % N, iy: Math.floor(wt / N), life: 1 });
+          }
+        }
       }
       for (var fi = 0; fi < 3; fi++) {
         flecks.push({
           x: waveX + rand(-30, 30),
-          y: rand(backY + 20, H - 10),
+          y: rand(ORY + 40, H - 10),
           vx: rand(-30, 30),
           vy: rand(-160, -40),
           r: rand(2, 4),
@@ -1165,7 +1111,6 @@
       }
     }
 
-    // Round-start dolly settles over ~0.9s.
     if (dolly > 0) dolly = Math.max(0, dolly - dt / 0.9);
 
     // Broom velocity from frame to frame.
@@ -1177,31 +1122,28 @@
     }
     broom.px = broom.x;
     broom.py = broom.y;
-    var sp = Math.hypot(broom.vx, broom.vy);
-    if (sp > 30) broom.angle = lerp(broom.angle, Math.atan2(broom.vy, broom.vx), 0.2);
+    var sp2 = Math.hypot(broom.vx, broom.vy);
 
-    // Sweep trail: drop fading points behind the broom while it moves.
-    if (broom.active && sp > 45) {
-      trail.push({ x: broom.x, y: broom.y + 16, life: 1 });
+    // Sweep trail: fading points behind the bristles while the broom moves.
+    if (broom.active && sp2 > 45) {
+      trail.push({ x: broom.x - 6, y: broom.y + 26, life: 1 });
       if (trail.length > 16) trail.shift();
     }
-    for (var ti = trail.length - 1; ti >= 0; ti--) {
-      trail[ti].life -= dt * 3.2;
-      if (trail[ti].life <= 0) trail.splice(ti, 1);
+    for (var ti2 = trail.length - 1; ti2 >= 0; ti2--) {
+      trail[ti2].life -= dt * 3.2;
+      if (trail[ti2].life <= 0) trail.splice(ti2, 1);
     }
 
     if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
 
-    // Camera: ease toward a slight offset that follows the broom, so the
-    // room parallaxes as you sweep. Impact shake decays on its own clock.
-    var swayX = (REDUCED || !broom.active) ? 0 : (broom.x - W / 2) * 0.030;
-    var swayY = (REDUCED || !broom.active) ? 0 : (broom.y - H * 0.6) * 0.018;
+    // Camera sway toward the broom.
+    var swayX = (REDUCED || !broom.active) ? 0 : (broom.x - W / 2) * 0.022;
+    var swayY = (REDUCED || !broom.active) ? 0 : (broom.y - H * 0.6) * 0.014;
     var camEase = clamp(dt * 4, 0, 1);
     camX = lerp(camX, swayX, camEase);
     camY = lerp(camY, swayY, camEase);
 
-    // Debris physics: flung pieces arc up under gravity and bounce off the
-    // tiles once or twice before tumbling away.
+    // Debris: flung pieces arc under gravity and bounce off the tiles.
     for (var d = debris.length - 1; d >= 0; d--) {
       var p = debris[d];
       p.x += p.vx * dt;
@@ -1220,8 +1162,6 @@
           p.vh = 0;
         }
       }
-      // Light drag and a slow fade so the piece stays solid as it rockets
-      // clear of the frame instead of dissolving in place.
       p.vx *= (1 - 0.35 * dt);
       p.vy *= (1 - 0.35 * dt);
       p.rot += p.vr * dt;
@@ -1230,7 +1170,6 @@
       if (p.life <= 0 || off) debris.splice(d, 1);
     }
 
-    // Flecks.
     for (var f = flecks.length - 1; f >= 0; f--) {
       var fl = flecks[f];
       fl.x += fl.vx * dt;
@@ -1240,7 +1179,6 @@
       if (fl.life <= 0) flecks.splice(f, 1);
     }
 
-    // Score floaters.
     for (var t = floaters.length - 1; t >= 0; t--) {
       var ft = floaters[t];
       ft.y -= 46 * dt;
@@ -1249,515 +1187,292 @@
     }
   }
 
-  // ---------- Render ----------
+  // ---------- Item painters (low-poly voxel style) ----------
 
-  function drawFloor() {
-    var rows = 11, cols = 9;
+  function ppoly(pts, color) { poly(ctx, pts, color); }
 
-    // Kitchen back wall, pre-rendered on resize. All the full-frame fills
-    // here are overscanned 30px per side so camera sway and shake never
-    // reveal the canvas edge. The wall follows only half the camera sway,
-    // so the far plane separates from the floor like a diorama.
-    if (wallCanvas) ctx.drawImage(wallCanvas, -30 + camX * 0.5, camY * 0.5, W + 60, backY);
+  function isoShadow(fx, d, s, a) {
+    var c = floorPos(fx, d, 0);
+    ppoly([{x:c.x-s,y:c.y},{x:c.x,y:c.y-s*0.5},{x:c.x+s,y:c.y},{x:c.x,y:c.y+s*0.5}], "rgba(74,53,102," + a + ")");
+  }
 
-    // Floor base (also hides any anti-alias seams between tiles).
-    ctx.fillStyle = floorGrad;
-    ctx.fillRect(-30, backY, W + 60, H - backY + 30);
+  // Dust bunny: a scraggly tumbleweed of tangled fluff.
+  var JAG = [1.12,0.94,1.06,0.9,1.14,0.96,1.04,0.88,1.1,0.93,1.15,0.92,1.05,0.96,1.1,0.9,1.08,0.94,1.13,0.95];
 
-    // Baseboard shadow where the wall meets the floor.
-    ctx.fillStyle = "rgba(74, 53, 102, 0.07)";
-    ctx.fillRect(-30, backY, W + 60, 3);
+  function drawDust(x, y, s, alpha, item) {
+    var cx = x, cy = y - 22 * s;
+    var R = 17 * s;
+    var jOff = item ? Math.floor(item.seed * 3) % 20 : 0;
+    var wob = item ? Math.sin(item.born * 2.4 + item.seed) * 0.03 : 0;
+    ctx.save();
+    ctx.globalAlpha = alpha;
 
-    // Checkerboard kitchen tiles in perspective. The grid is drawn well
-    // beyond the fx 0..1 play area so the tiles reach the canvas edges at
-    // every depth instead of converging to a strip in the middle. Tiles that
-    // land fully offscreen are skipped, so the extra columns cost little.
-    var tileA = "#FAF5EC", tileB = "#E8DECE";
-    var extra = 14;
-    for (var i = 0; i < rows; i++) {
-      var d0 = i / rows, d1 = (i + 1) / rows;
-      var y0 = mapY(d0), y1 = mapY(d1);
-      for (var j = -extra; j < cols + extra; j++) {
-        var fx0 = j / cols, fx1 = (j + 1) / cols;
-        var xa = mapX(fx0, d0), xb = mapX(fx1, d0);
-        var xc = mapX(fx1, d1), xd = mapX(fx0, d1);
-        if (Math.max(xa, xb, xc, xd) < -40 || Math.min(xa, xb, xc, xd) > W + 40) continue;
-        ctx.fillStyle = ((i + j) % 2 === 0) ? tileA : tileB;
-        ctx.beginPath();
-        ctx.moveTo(xa, y0);
-        ctx.lineTo(xb, y0);
-        ctx.lineTo(xc, y1);
-        ctx.lineTo(xd, y1);
-        ctx.closePath();
-        ctx.fill();
+    function burst(rMul, col) {
+      var pts = [];
+      for (var i = 0; i < 20; i++) {
+        var an = -Math.PI / 2 + i * TAU / 20;
+        var rr = R * JAG[(i + jOff) % 20] * (rMul + wob * ((i % 3) - 1));
+        pts.push({x: cx + Math.cos(an) * rr, y: cy + Math.sin(an) * rr * 0.94});
       }
-    }
-
-    // Grout lines between the tiles, spanning the same extended grid.
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(120, 100, 140, 0.13)";
-    var fxL = -extra / cols, fxR = (cols + extra) / cols;
-    for (var ri = 0; ri <= rows; ri++) {
-      var d = ri / rows, gy = mapY(d);
+      ctx.fillStyle = col;
       ctx.beginPath();
-      ctx.moveTo(mapX(fxL, d), gy);
-      ctx.lineTo(mapX(fxR, d), gy);
-      ctx.stroke();
-    }
-    for (var cj = -extra; cj <= cols + extra; cj++) {
-      var fx = cj / cols;
-      var gx0 = mapX(fx, 0), gx1 = mapX(fx, 1);
-      if (Math.max(gx0, gx1) < -40 || Math.min(gx0, gx1) > W + 40) continue;
-      ctx.beginPath();
-      ctx.moveTo(gx0, mapY(0));
-      ctx.lineTo(gx1, mapY(1));
-      ctx.stroke();
-    }
-
-    // The grime coat sits on the tiles, under the lighting passes, so the
-    // broom's cleaned streaks pick up the floor's glow.
-    if (grimeCanvas) ctx.drawImage(grimeCanvas, -GRIME_PAD, 0, W + GRIME_PAD * 2, H);
-
-    // Goo splats the slime monster left behind.
-    for (var sp = 0; sp < splats.length; sp++) {
-      var spl = splats[sp];
-      ctx.fillStyle = "rgba(123, 160, 91, " + (0.28 * clamp(spl.life, 0, 1)).toFixed(3) + ")";
-      ctx.beginPath();
-      ctx.ellipse(spl.x, spl.y, spl.r, spl.r * 0.45, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Glow along the horizon, then a glossy light pool and a vignette so the
-    // tiles read as a polished, lit kitchen floor.
-    ctx.fillStyle = horizonGlow;
-    ctx.fillRect(-30, backY - H * 0.06, W + 60, H * 0.22);
-    ctx.fillStyle = lightPool;
-    ctx.fillRect(-30, -30, W + 60, H + 60);
-    ctx.fillStyle = vignette;
-    ctx.fillRect(-30, -30, W + 60, H + 60);
-
-    // A soft sheen band occasionally glides across the tiles, like light
-    // moving over a polished floor.
-    if (!REDUCED) {
-      var cyc = (worldT % 9) / 9;
-      if (cyc < 0.45) {
-        var sx = lerp(-160, W + 160, cyc / 0.45);
-        var sg = ctx.createLinearGradient(sx - 110, 0, sx + 110, 0);
-        sg.addColorStop(0, "rgba(255, 255, 255, 0)");
-        sg.addColorStop(0.5, "rgba(255, 255, 255, 0.06)");
-        sg.addColorStop(1, "rgba(255, 255, 255, 0)");
-        ctx.fillStyle = sg;
-        ctx.fillRect(sx - 110, backY, 220, H - backY + 30);
+      for (var j = 0; j < 20; j++) {
+        var p0 = pts[j], p1 = pts[(j + 1) % 20];
+        var mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+        if (j === 0) ctx.moveTo(mx, my);
+        else ctx.quadraticCurveTo(p0.x, p0.y, mx, my);
       }
+      ctx.quadraticCurveTo(pts[0].x, pts[0].y, (pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
+      ctx.closePath(); ctx.fill();
     }
-
-    // Shaft of daylight falling from the window across the tiles. Its top
-    // edge tracks the parallaxed wall so it stays anchored to the window.
-    if (shaftGrad) {
-      ctx.fillStyle = shaftGrad;
-      ctx.beginPath();
-      ctx.moveTo(winL + camX * 0.5, backY);
-      ctx.lineTo(winR + camX * 0.5, backY);
-      ctx.lineTo(winR + W * 0.16, H * 0.82);
-      ctx.lineTo(winL - W * 0.05, H * 0.82);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    // Dust motes drifting and twinkling inside the shaft.
-    for (var mi = 0; mi < motes.length; mi++) {
-      var mote = motes[mi];
-      var mu = mote.u + Math.sin(worldT * 0.4 + mote.ph) * 0.04;
-      var mxL = lerp(winL + camX * 0.5, winL - W * 0.05, mote.v);
-      var mxR = lerp(winR + camX * 0.5, winR + W * 0.16, mote.v);
-      var mx = lerp(mxL, mxR, mu);
-      var my = lerp(backY, H * 0.82, mote.v);
-      var tw = 0.5 + 0.5 * Math.sin(worldT * 2.2 + mote.ph * 3);
-      ctx.globalAlpha = 0.12 + 0.25 * tw;
-      ctx.fillStyle = "#FFF3D6";
-      ctx.beginPath();
-      ctx.arc(mx, my, mote.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function contactShadow(x, y, rx, alpha) {
-    // Soft radial falloff so the shadow reads as blurred, not a hard ellipse.
-    var g = ctx.createRadialGradient(x, y, 0, x, y, rx);
-    g.addColorStop(0, "rgba(74, 53, 102, " + (0.36 * alpha).toFixed(3) + ")");
-    g.addColorStop(0.7, "rgba(74, 53, 102, " + (0.14 * alpha).toFixed(3) + ")");
-    g.addColorStop(1, "rgba(74, 53, 102, 0)");
+    burst(1.22, "rgba(185,178,166,0.35)");
+    burst(1.0, "#C7C0B4");
     ctx.save();
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.ellipse(x, y, rx, rx * 0.44, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - 3*s, cy - 4*s, R * 0.72, 0, TAU); ctx.clip();
+    burst(1.0, "#D8D1C5");
     ctx.restore();
-  }
 
-  function drawDust(x, y, s, t, item) {
-    ctx.save();
-    ctx.translate(x, y);
-    // An occasional nervous shiver.
-    if (item && ((item.born + item.seed) % 4.5) < 0.25) {
-      ctx.translate(Math.sin(item.born * 70) * 0.9, 0);
-    }
-    ctx.scale(s, s);
-    ctx.globalAlpha = t;
-
-    // Soft stray fuzz radiating out so the silhouette looks light and messy.
-    ctx.strokeStyle = "rgba(140, 134, 124, 0.8)";
-    ctx.lineWidth = 1.3;
-    ctx.lineCap = "round";
-    for (var i = 0; i < 18; i++) {
-      var a = (i / 18) * Math.PI * 2 + 0.25;
-      var r0 = 10 + (i % 3);
-      var r1 = 17 + (i % 4) * 2.2;
+    // two rounded tufts on top — the only nod to "bunny"
+    function softTuft(bx3, tipX, tipY, w3, col) {
+      ctx.fillStyle = col;
       ctx.beginPath();
-      ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0 * 0.82 - 1);
-      ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1 * 0.82 - 1);
-      ctx.stroke();
-    }
-
-    // Two floppy ears poking up (the bunny part).
-    ctx.fillStyle = "#A29C93";
-    ctx.beginPath();
-    ctx.ellipse(-6, -13, 3.1, 7.5, -0.35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(4, -14, 2.9, 8, 0.28, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Fluffy body built from overlapping puffs, shaded with a soft top-left light.
-    var bodyGrad = ctx.createRadialGradient(-4, -5, 2, 0, 1, 18);
-    bodyGrad.addColorStop(0, "#CAC4BB");
-    bodyGrad.addColorStop(1, "#A19B92");
-    var puffs = [[0,1,12],[-8,3,7.5],[8,2,7.5],[-4,-4,7],[5,-4,7],[0,7,7.5]];
-    ctx.fillStyle = bodyGrad;
-    for (var p = 0; p < puffs.length; p++) {
+      ctx.moveTo(bx3 - w3, cy - R * 0.82);
+      ctx.quadraticCurveTo(tipX - w3 * 1.1, tipY, tipX, tipY - w3 * 0.5);
+      ctx.quadraticCurveTo(tipX + w3 * 1.1, tipY, bx3 + w3, cy - R * 0.82);
+      ctx.closePath(); ctx.fill();
       ctx.beginPath();
-      ctx.arc(puffs[p][0], puffs[p][1], puffs[p][2], 0, Math.PI * 2);
-      ctx.fill();
+      ctx.arc(tipX, tipY - w3 * 0.3, w3 * 0.7, 0, TAU); ctx.fill();
     }
-    // Soft specular highlight.
-    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-    ctx.beginPath();
-    ctx.arc(-4, -4, 4, 0, Math.PI * 2);
-    ctx.fill();
+    softTuft(cx - 6*s, cx - 8*s, cy - R - 11*s, 3.6*s, "#C7C0B4");
+    softTuft(cx + 5*s, cx + 6.5*s, cy - R - 8*s, 3*s, "#B5AEA2");
 
-    // Tiny eyes and nose so it reads as a critter. It blinks now and then.
-    var blink = item && ((item.born + item.seed * 0.7) % 3.4) < 0.14;
-    ctx.fillStyle = "#574F47";
-    if (blink) {
-      ctx.strokeStyle = "#574F47";
-      ctx.lineWidth = 1.2;
-      ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(-4.3, 0); ctx.lineTo(-1.7, 0); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(2.7, 0); ctx.lineTo(5.3, 0); ctx.stroke();
-    } else {
-      ctx.beginPath(); ctx.arc(-3, 0, 1.5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(4, 0, 1.5, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = "#9C857F";
-    ctx.beginPath(); ctx.arc(0.5, 4, 1.2, 0, Math.PI * 2); ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawFootprint(x, y, s, t) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-    ctx.globalAlpha = t;
-    ctx.rotate(-0.14);
-
-    // A muddy shoe print: a faint smear, a front sole pad and a heel, with
-    // tread marks across both so it reads as tracked-in dirt.
-    ctx.fillStyle = "rgba(94, 68, 41, 0.22)";
-    ctx.beginPath();
-    ctx.ellipse(2, 3, 14, 11, 0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#7A5A3C";
-    // Front sole pad (toe end).
-    ctx.beginPath();
-    ctx.ellipse(0, -5, 8, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Heel.
-    ctx.beginPath();
-    ctx.ellipse(0.5, 9, 5.6, 5.6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Tread marks pressed into the mud.
-    ctx.strokeStyle = "#5E4429";
-    ctx.lineWidth = 1.3;
-    ctx.lineCap = "round";
-    for (var i = 0; i < 4; i++) {
-      var yy = -10 + i * 4;
-      ctx.beginPath();
-      ctx.moveTo(-6, yy);
-      ctx.lineTo(6, yy);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.moveTo(-4, 8); ctx.lineTo(4, 8);
-    ctx.moveTo(-3.4, 10.6); ctx.lineTo(3.4, 10.6);
+    // tangled fiber strands
+    ctx.strokeStyle = "rgba(148,141,129,0.75)"; ctx.lineWidth = 1.3*s; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(cx - R*0.7, cy - 2*s);
+    ctx.bezierCurveTo(cx - R*0.2, cy - R*0.75, cx + R*0.45, cy - R*0.2, cx + R*0.68, cy - R*0.55);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - R*0.55, cy + R*0.45);
+    ctx.bezierCurveTo(cx, cy + R*0.1, cx + R*0.3, cy + R*0.6, cx + R*0.72, cy + R*0.25);
+    ctx.stroke();
+    // stray hair looping out
+    ctx.strokeStyle = "rgba(120,112,100,0.8)"; ctx.lineWidth = 1*s;
+    ctx.beginPath(); ctx.moveTo(cx + R*0.8, cy - R*0.3);
+    ctx.bezierCurveTo(cx + R*1.5, cy - R*0.9, cx + R*1.7, cy - R*0.1, cx + R*1.15, cy - R*0.05);
     ctx.stroke();
 
-    ctx.restore();
-  }
+    // trapped lint + crumb
+    ctx.fillStyle = "#D9A3B5";
+    ctx.save(); ctx.translate(cx - R*0.45, cy + R*0.15); ctx.rotate(0.4); ctx.fillRect(0, 0, 4*s, 2.6*s); ctx.restore();
+    ctx.fillStyle = "#C9A96B";
+    ctx.beginPath(); ctx.arc(cx + R*0.4, cy - R*0.45, 1.8*s, 0, TAU); ctx.fill();
 
-  function drawSlime(x, y, s, t, item) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-    ctx.globalAlpha = t;
-
-    var ph = item ? item.born * 7 : 0;
-    var face = item ? item.flip : 1;
-    var squish = 1 + Math.sin(ph) * 0.09;
-    var step = item ? Math.sin(ph) * 3 : 0;
-
-    // Little running feet that pump as it scurries.
-    ctx.fillStyle = "#5F7E45";
-    ctx.beginPath(); ctx.ellipse(-6 + step, 13, 4, 2.6, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(6 - step, 13, 4, 2.6, 0, 0, Math.PI * 2); ctx.fill();
-
-    // Gooey body with a drippy lower edge, shaded lighter toward the top.
-    var slimeGrad = ctx.createRadialGradient(-2, -7, 2, 0, 0, 19);
-    slimeGrad.addColorStop(0, "#A4C980");
-    slimeGrad.addColorStop(1, "#688D46");
-    ctx.fillStyle = slimeGrad;
-    ctx.beginPath();
-    ctx.moveTo(-13, 4);
-    ctx.bezierCurveTo(-15, -13 * squish, 15, -13 * squish, 13, 4);
-    ctx.bezierCurveTo(13, 11, 9, 12, 7, 9);
-    ctx.bezierCurveTo(5, 13, 1, 13, -1, 9);
-    ctx.bezierCurveTo(-3, 13, -8, 13, -8, 8);
-    ctx.bezierCurveTo(-11, 11, -13, 9, -13, 4);
-    ctx.closePath();
-    ctx.fill();
-
-    // Lighter sheen on top.
-    ctx.fillStyle = "#8FB570";
-    ctx.beginPath();
-    ctx.ellipse(-3, -4, 6, 5, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Googly eyes whose pupils lead the direction of travel.
+    // googly eyes half-buried in the fluff; it blinks now and then
+    var blink = item && ((item.born + item.seed * 0.7) % 3.4) < 0.14;
     ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath(); ctx.arc(-4, -2, 3.4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4, -2, 3.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#36461F";
-    ctx.beginPath(); ctx.arc(-4 + face * 1.1, -1.5, 1.6, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4 + face * 1.1, -1.5, 1.6, 0, Math.PI * 2); ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawWeb(x, y, s, t) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-    ctx.globalAlpha = t;
-    ctx.rotate(0.2);
-
-    // A cobweb: radial spokes plus sagging concentric strands. Dusty
-    // purple-gray so it reads as something to sweep up on the light floor.
-    var spokes = 8;
-    var R = 16;
-    ctx.strokeStyle = "rgba(106, 96, 120, 0.7)";
-    ctx.lineWidth = 1;
-    ctx.lineCap = "round";
-
-    // Radial spokes from the center.
-    for (var i = 0; i < spokes; i++) {
-      var a = (i / spokes) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(a) * R, Math.sin(a) * R);
-      ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx - 5.5*s, cy + 1*s, 5*s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 5*s, cy + 2.5*s, 4*s, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#C7C0B4";
+    ctx.beginPath(); ctx.arc(cx - 6*s, cy - 3.4*s, 4.4*s, Math.PI, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 5*s, cy - 1.2*s, 3.6*s, Math.PI, TAU); ctx.fill();
+    if (blink) {
+      ctx.strokeStyle = "#4A4239"; ctx.lineWidth = 1.6*s; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(cx - 7.5*s, cy + 2*s); ctx.lineTo(cx - 2.5*s, cy + 2*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 3.4*s, cy + 3*s); ctx.lineTo(cx + 7*s, cy + 3*s); ctx.stroke();
+    } else {
+      ctx.fillStyle = "#4A4239";
+      ctx.beginPath(); ctx.arc(cx - 4.6*s, cy + 2*s, 2.5*s, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 5.8*s, cy + 3*s, 2*s, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#FFFFFF";
+      ctx.beginPath(); ctx.arc(cx - 5.4*s, cy + 1.2*s, 0.9*s, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 5.2*s, cy + 2.4*s, 0.75*s, 0, TAU); ctx.fill();
     }
 
-    // Concentric strands that sag inward between the spokes.
-    var rings = [5, 9.5, 14];
-    for (var r = 0; r < rings.length; r++) {
-      var rad = rings[r];
+    // shedding specks
+    var sp = [[1.35, -0.2, 2.6], [-1.3, 0.35, 2.2], [0.3, 1.28, 2.0]];
+    for (var k = 0; k < sp.length; k++) {
+      var sx2 = cx + R * sp[k][0], sy2 = cy + R * sp[k][1], ss = sp[k][2] * s;
+      ppoly([{x:sx2-ss,y:sy2},{x:sx2,y:sy2-ss*1.5},{x:sx2+ss,y:sy2},{x:sx2,y:sy2+ss*1.5}], "rgba(165,158,146,0.55)");
+    }
+    ctx.restore();
+  }
+
+  // Boot print: a flat muddy decal.
+  function drawFootprint(x, y, s, alpha, item) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1.5 * s, 0.9 * s);
+    ctx.rotate(item ? (item.seed % 1.2) - 0.3 : 0.3);
+    ctx.globalAlpha = alpha;
+    ppoly([{x:-5.5,y:-11},{x:2,y:-13},{x:6.5,y:-6},{x:5,y:1},{x:-5,y:0}], "#8A6A48");
+    ppoly([{x:-3.5,y:-9},{x:3,y:-10},{x:3.4,y:-7.5},{x:-3.2,y:-6.8}], "#75593C");
+    ppoly([{x:-3.2,y:-4.5},{x:3.8,y:-5},{x:4,y:-2.8},{x:-3,y:-2.5}], "#75593C");
+    ppoly([{x:-3.5,y:5},{x:3,y:4.5},{x:3.5,y:10},{x:-3,y:10.5}], "#8A6A48");
+    ctx.restore();
+  }
+
+  // Goo monster: stepped voxel blob with horns, googly eyes and a grin.
+  function drawSlime(x, y, s, alpha, item) {
+    var ph = item ? item.born * 7 : 0;
+    var face = item ? item.flip : 1;
+    ctx.save();
+    ctx.translate(x, y - 20 * s);
+    ctx.scale(s, s);
+    ctx.globalAlpha = alpha;
+
+    var bw = 15, hzB = 12, hzT = 22, inTop = 3;
+    // base box
+    ppoly([{x:-bw,y:-hzB-bw*0.5},{x:0,y:-hzB-bw},{x:bw,y:-hzB-bw*0.5},{x:0,y:-hzB}], "#96BB72");
+    ppoly([{x:bw,y:-hzB-bw*0.5},{x:0,y:-hzB},{x:0,y:2},{x:bw,y:-bw*0.5+2}], "#7BA05B");
+    ppoly([{x:-bw,y:-hzB-bw*0.5},{x:0,y:-hzB},{x:0,y:2},{x:-bw,y:-bw*0.5+2}], "#66884A");
+    // crown box, inset
+    var cw = bw - inTop;
+    ppoly([{x:-cw,y:-hzT-cw*0.5},{x:0,y:-hzT-cw},{x:cw,y:-hzT-cw*0.5},{x:0,y:-hzT}], "#A9CD85");
+    ppoly([{x:cw,y:-hzT-cw*0.5},{x:0,y:-hzT},{x:0,y:-hzB},{x:cw,y:-hzB-cw*0.5}], "#83A961");
+    ppoly([{x:-cw,y:-hzT-cw*0.5},{x:0,y:-hzT},{x:0,y:-hzB},{x:-cw,y:-hzB-cw*0.5}], "#6F9250");
+    // gloss + horn nubs
+    ppoly([{x:-cw*0.55,y:-hzT-cw*0.62},{x:-cw*0.15,y:-hzT-cw*0.82},{x:cw*0.1,y:-hzT-cw*0.6},{x:-cw*0.3,y:-hzT-cw*0.42}], "rgba(255,255,255,0.45)");
+    ppoly([{x:-cw*0.5,y:-hzT-cw*0.7},{x:-cw*0.35,y:-hzT-cw*0.7-6},{x:-cw*0.2,y:-hzT-cw*0.7}], "#83A961");
+    ppoly([{x:cw*0.25,y:-hzT-cw*0.55},{x:cw*0.42,y:-hzT-cw*0.55-7},{x:cw*0.6,y:-hzT-cw*0.55}], "#6F9250");
+    // soft goo drips off the base
+    function gooDrip(dx2, dy2, len, col) {
+      var dw = 6;
+      ppoly([{x:dx2-dw/2,y:dy2},{x:dx2+dw/2,y:dy2},{x:dx2+dw*0.26,y:dy2+len},{x:dx2-dw*0.26,y:dy2+len}], col);
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(dx2, dy2+len, dw*0.32, 0, TAU); ctx.fill();
+    }
+    var wig = Math.sin(ph) * 1.5;
+    gooDrip(-bw*0.55, -bw*0.28+2, 7 + wig, "#66884A");
+    gooDrip(-bw*0.2, 1, 10 - wig, "#66884A");
+    gooDrip(bw*0.5, -bw*0.26+2, 8 + wig * 0.6, "#7BA05B");
+    // googly eyes + grin (pupils lead the direction of travel)
+    var ex = face * 1.2;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(-5.5, -hzB-bw*0.55, 4.6, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -hzB-bw*0.5, 3.6, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#36461F";
+    ctx.beginPath(); ctx.arc(-5.5 + ex, -hzB-bw*0.53, 2.1, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(4 + ex, -hzB-bw*0.48, 1.7, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(-6.1 + ex, -hzB-bw*0.58, 0.8, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5 + ex, -hzB-bw*0.53, 0.65, 0, TAU); ctx.fill();
+    ppoly([{x:-4.5,y:-hzB-bw*0.22},{x:4,y:-hzB-bw*0.18},{x:2.8,y:-hzB-bw*0.02},{x:-3,y:-hzB-bw*0.05}], "#3E5426");
+    ppoly([{x:-3,y:-hzB-bw*0.2},{x:-1.4,y:-hzB-bw*0.19},{x:-1.9,y:-hzB-bw*0.09}], "#FFFFFF");
+    ppoly([{x:-1,y:-hzB-bw*0.1},{x:1.4,y:-hzB-bw*0.09},{x:0.2,y:-hzB-bw*0.005}], "#C97BA0");
+    ctx.restore();
+  }
+
+  // Cobweb: fanned into a wall corner.
+  function drawWeb(x, y, s, alpha, item) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = "rgba(96,86,112,0.6)";
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = "round";
+    var lean = item && item.wall === "L" ? -1 : 1;
+    var spokes = [-0.42, -0.05, 0.34, 0.72, 1.10, 1.48];
+    var SR = 20 * s;
+    for (var i = 0; i < spokes.length; i++) {
+      var an = spokes[i];
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(an) * SR * lean, Math.sin(an) * SR);
+      ctx.stroke();
+    }
+    for (var ring = 0.4; ring <= 1.0; ring += 0.28) {
       ctx.beginPath();
-      for (var j = 0; j <= spokes; j++) {
-        var a2 = (j / spokes) * Math.PI * 2;
-        var px = Math.cos(a2) * rad, py = Math.sin(a2) * rad;
-        if (j === 0) {
-          ctx.moveTo(px, py);
-        } else {
-          var aMid = ((j - 0.5) / spokes) * Math.PI * 2;
-          var sag = rad * 0.8;
-          ctx.quadraticCurveTo(Math.cos(aMid) * sag, Math.sin(aMid) * sag, px, py);
+      for (var j = 0; j < spokes.length; j++) {
+        var px2 = Math.cos(spokes[j]) * SR * ring * lean, py2 = Math.sin(spokes[j]) * SR * ring;
+        if (j === 0) ctx.moveTo(px2, py2);
+        else {
+          var am = (spokes[j] + spokes[j - 1]) / 2;
+          var sag = ring * 0.84;
+          ctx.quadraticCurveTo(Math.cos(am) * SR * sag * lean, Math.sin(am) * SR * sag, px2, py2);
         }
       }
       ctx.stroke();
     }
-
-    // Small dark anchor at the hub.
-    ctx.fillStyle = "rgba(74, 53, 102, 0.55)";
-    ctx.beginPath();
-    ctx.arc(0, 0, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-
     ctx.restore();
   }
 
-  function drawSparkle(x, y, s, t, item) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-
+  // Gold gem: faceted diamond with a real glow.
+  function drawSparkle(x, y, s, alpha, item) {
     var ph = item ? item.born * 4 : 0;
-    var pulse = 1 + Math.sin(ph) * 0.12;
-    var a = t;
-    // Blink faster as it is about to expire.
+    var bob = Math.sin(ph) * 4;
+    var a = alpha;
     if (item && item.ttl && (item.ttl - item.born) < 1) {
       a *= (0.4 + 0.6 * Math.abs(Math.sin(item.born * 12)));
     }
-    ctx.globalAlpha = a;
-    ctx.rotate(ph * 0.15);
-
-    // Soft golden glow, additively blended so it blooms over the floor.
+    var cy = y - 24 * s - bob;
     ctx.save();
+    ctx.globalAlpha = a;
     ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = "rgba(240, 199, 94, 0.38)";
-    ctx.beginPath();
-    ctx.arc(0, 0, 16 * pulse, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // Four-point sparkle, gold with a white core.
-    function star(scale, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      for (var i = 0; i < 8; i++) {
-        var ang = i * Math.PI / 4;
-        var rad = (i % 2 === 0) ? 13 * scale : 3.4 * scale;
-        var px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fill();
-    }
-    star(pulse, "#F0C75E");
-    star(pulse * 0.6, "#FFFFFF");
-
+    var g = ctx.createRadialGradient(x, cy, 2, x, cy, 34 * s);
+    g.addColorStop(0, "rgba(255,224,130,0.5)");
+    g.addColorStop(1, "rgba(255,224,130,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, cy, 34 * s, 0, TAU); ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.translate(x, cy);
+    ctx.scale(1.25 * s, 1.25 * s);
+    ppoly([{x:-9,y:-4},{x:-4,y:-10},{x:4,y:-10},{x:9,y:-4}], "#FFE08A");
+    ppoly([{x:-9,y:-4},{x:0,y:12},{x:-2,y:-4}], "#D9A83C");
+    ppoly([{x:-2,y:-4},{x:0,y:12},{x:4,y:-4}], "#F0C75E");
+    ppoly([{x:4,y:-4},{x:0,y:12},{x:9,y:-4}], "#E8B84A");
+    ppoly([{x:-3,y:-9},{x:1,y:-9},{x:0,y:-5},{x:-3,y:-6}], "#FFF3C8");
     ctx.restore();
   }
 
-  function drawItemShape(kind, x, y, s, t, item) {
-    if (kind === "dust") drawDust(x, y, s, t, item);
-    else if (kind === "footprint") drawFootprint(x, y, s, t);
-    else if (kind === "slime") drawSlime(x, y, s, t, item);
-    else if (kind === "sparkle") drawSparkle(x, y, s, t, item);
-    else drawWeb(x, y, s, t);
+  function drawItemShape(kind, x, y, s, alpha, item) {
+    if (kind === "dust") drawDust(x, y, s, alpha, item);
+    else if (kind === "footprint") drawFootprint(x, y, s, alpha, item);
+    else if (kind === "slime") drawSlime(x, y, s, alpha, item);
+    else if (kind === "sparkle") drawSparkle(x, y, s, alpha, item);
+    else drawWeb(x, y, s, alpha, item);
   }
 
+  // Chunky voxel broom that leans into its motion.
   function drawBroom() {
     if (!broom.active) return;
     var x = broom.x, y = broom.y;
-
-    // Polished-floor reflection, mirrored about the bristle line.
-    var baseY = y + 30;
-    ctx.save();
-    ctx.globalAlpha = 0.15;
-    ctx.translate(0, 1.45 * baseY);
-    ctx.scale(1, -0.45);
-    drawBroomBody(x, y);
-    ctx.restore();
-
-    drawBroomBody(x, y);
-  }
-
-  function drawBroomBody(x, y) {
+    // shadow rhombus under the bristles
+    var fp = screenToFloor(x - 6, y + 26);
+    if (fp.ix > -1 && fp.ix < N + 3 && fp.iy > -1 && fp.iy < N + 3) {
+      var sc = iso(fp.ix, fp.iy);
+      ppoly([{x:sc.x-24,y:sc.y},{x:sc.x,y:sc.y-12},{x:sc.x+24,y:sc.y},{x:sc.x,y:sc.y+12}], "rgba(74,53,102,0.16)");
+    }
     ctx.save();
     ctx.translate(x, y);
-    // Lean the broom into its horizontal motion.
-    var tilt = clamp(broom.vx * 0.00022, -0.3, 0.3);
+    var tilt = clamp(broom.vx * 0.00022, -0.22, 0.22) - 0.10;
     ctx.rotate(tilt);
-
-    // Handle.
-    ctx.strokeStyle = "#6B4C8F";
-    ctx.lineWidth = 6;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(8, -52);
-    ctx.lineTo(-2, 6);
-    ctx.stroke();
-
-    // Small green leaf on the handle.
-    ctx.save();
-    ctx.translate(8, -40);
-    ctx.rotate(-0.5);
-    ctx.fillStyle = "#7BA05B";
-    ctx.beginPath();
-    ctx.ellipse(6, 0, 7, 3.4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#5F7E45";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(12, 0);
-    ctx.stroke();
-    ctx.restore();
-
-    // Bristle binding.
-    ctx.fillStyle = "#4A3566";
-    ctx.beginPath();
-    ctx.roundRect(-10, 2, 16, 9, 3);
-    ctx.fill();
-
-    // Bristles drag behind the motion like real straw: a horizontal shear,
-    // pivoted where they leave the binding.
-    var bend = clamp(-broom.vx * 0.0004, -0.4, 0.4);
-    ctx.save();
-    ctx.translate(0, 10);
-    ctx.transform(1, 0, bend, 1, 0, 0);
-    ctx.translate(0, -10);
-
-    // Flared bristles with a soft vertical sheen.
-    var bristleGrad = ctx.createLinearGradient(0, 10, 0, 30);
-    bristleGrad.addColorStop(0, "#8A5FCB");
-    bristleGrad.addColorStop(1, "#6B4C8F");
-    ctx.fillStyle = bristleGrad;
-    ctx.beginPath();
-    ctx.moveTo(-10, 10);
-    ctx.lineTo(6, 10);
-    ctx.lineTo(20, 30);
-    ctx.lineTo(-24, 30);
-    ctx.closePath();
-    ctx.fill();
-    // Bristle strands.
-    ctx.strokeStyle = "#C4A8E8";
-    ctx.lineWidth = 1.4;
-    for (var i = 0; i < 9; i++) {
-      var tt = i / 8;
-      var topx = lerp(-9, 5, tt);
-      var botx = lerp(-22, 18, tt);
-      ctx.beginPath();
-      ctx.moveTo(topx, 11);
-      ctx.lineTo(botx, 29);
-      ctx.stroke();
+    // fat two-tone handle
+    ppoly([{x:7,y:-96},{x:13,y:-94},{x:1,y:-6},{x:-5,y:-7}], "#6B4C8F");
+    ppoly([{x:7,y:-96},{x:10,y:-95},{x:-2,y:-6.5},{x:-5,y:-7}], "#8A5FCB");
+    // leaf
+    ppoly([{x:12,y:-75},{x:27,y:-84},{x:15,y:-69}], "#7BA05B");
+    ppoly([{x:12,y:-75},{x:25,y:-73},{x:15,y:-69}], "#8FB570");
+    // binding
+    ppoly([{x:-14,y:-9},{x:10,y:-9},{x:8,y:2},{x:-12,y:2}], "#3B2A54");
+    // bristle slats, dragging behind the motion
+    var bend = clamp(-broom.vx * 0.0003, -8, 8);
+    var tips = [-35 + bend, -23 + bend, -11 + bend, 1 + bend, 12 + bend, 22 + bend];
+    for (var b = 0; b < 5; b++) {
+      ppoly([
+        {x:-12 + b * 4.6, y: 1}, {x:-7.4 + b * 4.6, y: 1},
+        {x: tips[b + 1], y: 27}, {x: tips[b], y: 27}
+      ], b % 2 === 0 ? "#7B4FBE" : "#5B4380");
     }
-    ctx.restore();
+    ppoly([{x:-35 + bend,y:27},{x:22 + bend,y:27},{x:19 + bend,y:32},{x:-31 + bend,y:32}], "#4A3566");
     ctx.restore();
   }
 
+  // ---------- Render ----------
+
   function render() {
+    if (!W) return;
     ctx.clearRect(0, 0, W, H);
     ctx.save();
-
-    // Camera sway plus impact shake. drawFloor overscans its fills so the
-    // shifted scene never shows a bare canvas edge.
     ctx.translate(-camX, -camY);
 
-    // Round-start dolly: the camera settles in from a slight zoom. Zooming
-    // in only ever crops, so it never exposes the canvas edges.
     if (dolly > 0) {
       var z = 1 + 0.08 * dolly * dolly;
       ctx.translate(W / 2, H * 0.62);
@@ -1765,76 +1480,128 @@
       ctx.translate(-W / 2, -H * 0.62);
     }
 
-    drawFloor();
+    // static room
+    if (bgCanvas) ctx.drawImage(bgCanvas, -PAD, -PAD, W + PAD * 2, H + PAD * 2);
 
-    // Draw items back to front so nearer ones overlap.
-    var sorted = items.slice().sort(function (a, b) { return b.d - a.d; });
-    for (var i = 0; i < sorted.length; i++) {
-      var it = sorted[i];
-      var x = mapX(it.fx, it.d);
-      var y = mapY(it.d);
-      // Flat items still pop in with a quick scale tween; dropping items
-      // arrive at full size and sell their entrance with the fall itself.
-      var drops = it.kind !== "footprint" && it.kind !== "sparkle";
-      var appear = drops ? 1 : easeOutBack(clamp(it.born / 0.28, 0, 1));
-      var s = renderScale(it.d) * appear;
-      var bright = depthBrightness(it.d);
-      // Gentle idle bob, suppressed while airborne.
-      var bob = it.h > 0 ? 0 : Math.sin(it.born * 3 + it.seed) * 1.2;
-      var drawY = y + bob - it.h;
-      // Height above the floor shrinks and fades the contact shadow — the
-      // shadow is what makes the fall read as 3D.
-      var hf = clamp(it.h / 240, 0, 1);
-      // Polished-floor reflection: a squashed, faded mirror image under the
-      // items that have volume. Footprints and cobwebs are flat stains and
-      // would look wrong reflected. Mirroring about the floor line means an
-      // airborne item separates from its reflection, like a real surface.
-      if (it.kind === "dust" || it.kind === "slime" || it.kind === "sparkle") {
-        var baseY = y + 14 * s;
-        ctx.save();
-        ctx.translate(0, 1.5 * baseY);
-        ctx.scale(1, -0.5);
-        drawItemShape(it.kind, x, drawY, s, 0.16 * bright, it);
-        ctx.restore();
+    // dust motes in the window light
+    for (var mi = 0; mi < motes.length; mi++) {
+      var mo = motes[mi];
+      var mt = iso(3.75 + mo.u * 2.3, 0, WALL_H * 0.6);
+      var mb = iso(4.6 + mo.u * 2.6, 3.2 + mo.u * 0.5, 0);
+      var mx = lerp(mt.x, mb.x, mo.v), my = lerp(mt.y, mb.y, mo.v);
+      var tw = 0.5 + 0.5 * Math.sin(worldT * 2.2 + mo.ph * 3);
+      ctx.globalAlpha = 0.25 + 0.3 * tw;
+      ppoly([{x:mx-mo.r,y:my},{x:mx,y:my-mo.r*1.5},{x:mx+mo.r,y:my},{x:mx,y:my+mo.r*1.5}], "#FFF3D6");
+    }
+    ctx.globalAlpha = 1;
+
+    // per-tile dirt + gleam flashes
+    for (var ti = 0; ti < N * N; ti++) {
+      if (dirt[ti] > 0.02) {
+        var dx2 = ti % N, dy2 = Math.floor(ti / N);
+        ppoly([iso(dx2,dy2), iso(dx2+1,dy2), iso(dx2+1,dy2+1), iso(dx2,dy2+1)],
+          "rgba(122,106,88," + (dirt[ti] * 0.30).toFixed(3) + ")");
       }
-      contactShadow(x, y + 13 * s, TYPES[it.kind].radius * s * lerp(1.05, 0.8, hf), 0.30 * bright * lerp(1, 0.45, hf));
-      // Landing squash-and-stretch, pivoted at the contact point.
+    }
+    for (var gl = 0; gl < gleams.length; gl++) {
+      var gg = gleams[gl];
+      var ga = clamp(gg.life, 0, 1);
+      ppoly([iso(gg.ix,gg.iy), iso(gg.ix+1,gg.iy), iso(gg.ix+1,gg.iy+1), iso(gg.ix,gg.iy+1)],
+        "rgba(255,255,255," + (0.45 * ga).toFixed(3) + ")");
+      var gc = iso(gg.ix + 0.5, gg.iy + 0.5);
+      var gs = 8 * ga;
+      ppoly([{x:gc.x-gs,y:gc.y},{x:gc.x,y:gc.y-gs*1.6},{x:gc.x+gs,y:gc.y},{x:gc.x,y:gc.y+gs*1.6}],
+        "rgba(255,255,255," + (0.85 * ga).toFixed(3) + ")");
+    }
+
+    // sheen band gliding across the tiles now and then
+    if (!REDUCED) {
+      var cyc = (worldT % 9) / 9;
+      if (cyc < 0.45) {
+        var sx = lerp(-160, W + 160, cyc / 0.45);
+        var sg = ctx.createLinearGradient(sx - 110, 0, sx + 110, 0);
+        sg.addColorStop(0, "rgba(255,255,255,0)");
+        sg.addColorStop(0.5, "rgba(255,255,255,0.06)");
+        sg.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = sg;
+        ctx.fillRect(sx - 110, ORY, 220, H - ORY + PAD);
+      }
+    }
+
+    // goo splats
+    for (var sp = 0; sp < splats.length; sp++) {
+      var spl = splats[sp];
+      var sc2 = floorPos(spl.fx, spl.d, 0);
+      var sa = clamp(spl.life, 0, 1) * 0.35;
+      ppoly([{x:sc2.x-16,y:sc2.y},{x:sc2.x-2,y:sc2.y-9},{x:sc2.x+15,y:sc2.y-1},{x:sc2.x+2,y:sc2.y+9}], "rgba(123,160,91," + sa.toFixed(3) + ")");
+      ppoly([{x:sc2.x+18,y:sc2.y+5},{x:sc2.x+23,y:sc2.y+2},{x:sc2.x+26,y:sc2.y+6},{x:sc2.x+21,y:sc2.y+8}], "rgba(123,160,91," + (sa * 0.8).toFixed(3) + ")");
+    }
+
+    // furniture layer covers the dirt on the tiles behind it
+    if (fgCanvas) ctx.drawImage(fgCanvas, -PAD, -PAD, W + PAD * 2, H + PAD * 2);
+
+    // items: flat footprints first, then walls, then volumetric back-to-front
+    var i, it, p;
+    for (i = 0; i < items.length; i++) {
+      it = items[i];
+      if (it.kind !== "footprint") continue;
+      p = itemPos(it);
+      var fAppear = easeOutBack(clamp(it.born / 0.28, 0, 1));
+      drawItemShape("footprint", p.x, p.y, fAppear, 1, it);
+    }
+    for (i = 0; i < items.length; i++) {
+      it = items[i];
+      if (it.kind !== "web") continue;
+      p = itemPos(it);
+      var wAppear = easeOutBack(clamp(it.born / 0.28, 0, 1)) * (it.wscale || 1);
+      drawItemShape("web", p.x, p.y, wAppear, 1, it);
+    }
+    var vol = [];
+    for (i = 0; i < items.length; i++) {
+      if (items[i].kind !== "footprint" && items[i].kind !== "web") vol.push(items[i]);
+    }
+    vol.sort(function (a, b) { return (a.fx * N + a.d * N) - (b.fx * N + b.d * N); });
+    for (i = 0; i < vol.length; i++) {
+      it = vol[i];
+      p = itemPos(it);
+      var ground = floorPos(it.fx, it.d, 0);
+      var appear = (it.kind === "sparkle") ? easeOutBack(clamp(it.born / 0.28, 0, 1)) : 1;
+      var s = appear;
+      var hf = clamp(it.h / 240, 0, 1);
+      isoShadow(it.fx, it.d, TYPES[it.kind].radius * lerp(1.0, 0.7, hf), 0.16 * lerp(1, 0.45, hf));
       ctx.save();
       if (it.squashT > 0) {
         var q = it.squashT / 0.16;
-        ctx.translate(x, drawY + 10);
-        ctx.scale(1 + 0.28 * q, 1 - 0.26 * q);
-        ctx.translate(-x, -(drawY + 10));
+        ctx.translate(ground.x, ground.y);
+        ctx.scale(1 + 0.24 * q, 1 - 0.22 * q);
+        ctx.translate(-ground.x, -ground.y);
       }
-      drawItemShape(it.kind, x, drawY, s, bright, it);
+      drawItemShape(it.kind, p.x, p.y, s, 1, it);
       ctx.restore();
     }
 
-    // Flung debris, drawn above its ground shadow while airborne.
+    // flung debris
     for (var d = 0; d < debris.length; d++) {
-      var p = debris[d];
-      if (p.h > 1) contactShadow(p.x, p.y + 8, 12 * p.scale, 0.22 * clamp(p.life, 0, 1));
+      var pd = debris[d];
       ctx.save();
-      ctx.translate(p.x, p.y - p.h);
-      ctx.rotate(p.rot);
-      drawItemShape(p.kind, 0, 0, p.scale, clamp(p.life, 0, 1));
+      ctx.translate(pd.x, pd.y - pd.h);
+      ctx.rotate(pd.rot * 0.3);
+      drawItemShape(pd.kind, 0, 0, pd.scale, clamp(pd.life, 0, 1), null);
       ctx.restore();
     }
 
-    // Poof flecks.
+    // poof flecks
     for (var f = 0; f < flecks.length; f++) {
       var fl = flecks[f];
       ctx.globalAlpha = clamp(fl.life, 0, 1);
       ctx.fillStyle = fl.color;
-      ctx.beginPath();
-      ctx.arc(fl.x, fl.y, fl.r, 0, Math.PI * 2);
-      ctx.fill();
+      ppoly([{x:fl.x-fl.r,y:fl.y},{x:fl.x,y:fl.y-fl.r*1.4},{x:fl.x+fl.r,y:fl.y},{x:fl.x,y:fl.y+fl.r*1.4}], fl.color);
     }
     ctx.globalAlpha = 1;
 
-    // Score floaters.
+    // score floaters
     ctx.textAlign = "center";
-    ctx.font = "600 20px 'DM Sans', sans-serif";
+    ctx.font = "600 22px 'DM Sans', sans-serif";
     for (var t = 0; t < floaters.length; t++) {
       var ft = floaters[t];
       ctx.globalAlpha = clamp(ft.life, 0, 1);
@@ -1843,7 +1610,7 @@
     }
     ctx.globalAlpha = 1;
 
-    // Sweep trail beneath the broom.
+    // sweep trail
     if (trail.length > 1) {
       ctx.lineCap = "round";
       for (var k = 1; k < trail.length; k++) {
@@ -1860,21 +1627,19 @@
 
     drawBroom();
 
-    // Finale banner, drawn on top.
     if (banner) {
       ctx.globalAlpha = clamp(banner.life, 0, 1);
       ctx.fillStyle = "#7B4FBE";
       ctx.textAlign = "center";
       ctx.font = "700 32px 'Playfair Display', serif";
-      ctx.fillText(banner.text, W / 2, H * 0.34);
+      ctx.fillText(banner.text, W / 2, H * 0.40);
       ctx.globalAlpha = 1;
     }
 
-    // Golden-hour wash over the whole scene during the final seconds.
     if (goldenT > 0.01 && goldenGrad) {
       ctx.globalAlpha = goldenT;
       ctx.fillStyle = goldenGrad;
-      ctx.fillRect(-30, -30, W + 60, H + 60);
+      ctx.fillRect(-PAD, -PAD, W + PAD * 2, H + PAD * 2);
       ctx.globalAlpha = 1;
     }
 
@@ -1890,13 +1655,17 @@
     var now = ts / 1000;
     var dt = lastTs ? now - lastTs : 0;
     lastTs = now;
-    if (dt > 0.05) dt = 0.05;   // clamp big gaps (tab switches)
+    if (dt > 0.05) dt = 0.05;
     update(dt);
     render();
     raf = requestAnimationFrame(loop);
   }
 
   // ---------- Round flow ----------
+
+  function resetDirt() {
+    for (var i = 0; i < dirt.length; i++) dirt[i] = rand(0.35, 0.85);
+  }
 
   function startRound() {
     score = 0;
@@ -1914,16 +1683,17 @@
     flecks.length = 0;
     floaters.length = 0;
     trail.length = 0;
+    splats.length = 0;
+    gleams.length = 0;
     hudScore.textContent = "0";
     hudTime.textContent = "30";
     hudCombo.classList.remove("show");
     hudTime.parentNode.classList.remove("warn");
     ensureAudio();
-    resetGrime();
+    resetDirt();
     dolly = REDUCED ? 0 : 1;
     goldenT = 0;
     endSweepT = 0;
-    splats.length = 0;
     attractClock = 0;
     clearTimeout(endTimer);
     var confetti = frame.querySelectorAll(".confetti");
@@ -1940,8 +1710,6 @@
     return "Good start.";
   }
 
-  // Personal best, stored on this device only. Wrapped so a blocked or
-  // unavailable localStorage (private mode, sandboxed frame) never breaks the game.
   var BEST_KEY = "steadfast-sweep-best";
 
   function loadBest() {
@@ -1964,8 +1732,6 @@
     var prevBest = best;
     var beatenBest = score > best;
     if (beatenBest) { best = score; saveBest(best); }
-    // Beating a real previous best earns the top praise, whatever the raw
-    // score. The first score you ever set still uses the normal score tiers.
     var newRecord = beatenBest && prevBest > 0;
     endVerdict.textContent = newRecord ? "Immaculate." : verdictFor(score);
     endScore.textContent = score;
@@ -1973,27 +1739,26 @@
     endBest.textContent = beatenBest ? ("New personal best: " + best) : ("Your best: " + best);
     refreshBestLine();
 
-    // Final flourish: fling the leftovers off the floor, run the polish wave
-    // across the tiles, then reveal the end card over a gleaming room.
+    // Final flourish: fling the leftovers, run the polish wave, then reveal
+    // the end card over a gleaming room.
     for (var i = items.length - 1; i >= 0; i--) {
       var m = items[i];
-      var ix = mapX(m.fx, m.d), iy = mapY(m.d) - m.h;
-      var dirx = ix < W / 2 ? -1 : 1;
+      var mp = itemPos(m);
+      var dirx = mp.x < W / 2 ? -1 : 1;
       debris.push({
-        x: ix, y: iy,
+        x: mp.x, y: mp.y,
         vx: dirx * rand(500, 900), vy: rand(-150, 50),
         h: 1, vh: REDUCED ? 0 : rand(200, 400), bounces: 0,
-        rot: rand(0, Math.PI * 2), vr: rand(-10, 10),
-        scale: renderScale(m.d), kind: m.kind, life: 1, seed: m.seed
+        rot: rand(0, TAU), vr: rand(-10, 10),
+        scale: 1, kind: m.kind, life: 1, seed: m.seed
       });
     }
     items.length = 0;
     if (REDUCED) {
-      if (grimeCtx) grimeCtx.clearRect(0, 0, W + GRIME_PAD * 2, H);
+      for (var wt = 0; wt < dirt.length; wt++) dirt[wt] = 0;
     } else {
       endSweepT = 1;
     }
-    // Hold the attract spawner back so the polished floor gets its moment.
     attractClock = -2.5;
 
     clearTimeout(endTimer);
@@ -2024,7 +1789,6 @@
     var r = canvas.getBoundingClientRect();
     var x = (e.clientX - r.left) * (W / r.width);
     var y = (e.clientY - r.top) * (H / r.height);
-    // On touch, lift the broom head above the finger so it stays visible.
     if (e.pointerType === "touch") y -= 30;
     return { x: x, y: y };
   }
@@ -2043,9 +1807,8 @@
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     }
   });
-  canvas.addEventListener("pointerenter", function (e) { broom.active = true; });
-  canvas.addEventListener("pointerleave", function (e) {
-    // Keep the broom visible on desktop hover-out only briefly; just stop velocity.
+  canvas.addEventListener("pointerenter", function () { broom.active = true; });
+  canvas.addEventListener("pointerleave", function () {
     broom.vx = 0; broom.vy = 0;
   });
 
@@ -2055,7 +1818,7 @@
   soundToggle.addEventListener("click", function () {
     ensureAudio();
     setMuted(!muted);
-    if (!muted) blip(880, 0.12, "triangle", 0.12);   // little confirmation tone
+    if (!muted) blip(880, 0.12, "triangle", 0.12);
   });
 
   window.addEventListener("resize", resize);
@@ -2066,9 +1829,10 @@
   // ---------- Boot ----------
 
   resize();
-  setMuted(true);   // start quiet, matching the default
+  setMuted(true);
   best = loadBest();
   refreshBestLine();
+  resetDirt();
   broom.x = W / 2;
   broom.y = H * 0.7;
   broom.px = broom.x;
