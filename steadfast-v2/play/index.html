@@ -410,6 +410,16 @@
         <button class="btn" id="startBtn">Start sweeping</button>
         <p class="hint">Move your mouse or drag your finger.</p>
         <p class="hint" id="startBest" style="margin-top:6px;"></p>
+        <button class="btn-share" id="shareBtnStart" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span id="shareLabelStart">Share this game</span>
+        </button>
       </div>
 
       <!-- End screen. -->
@@ -1890,19 +1900,29 @@
   replayBtn.addEventListener("click", startRound);
 
   // Share: the native sheet on phones, clipboard copy elsewhere.
-  var shareBtn = document.getElementById("shareBtn");
-  var shareLabel = document.getElementById("shareLabel");
-  shareBtn.addEventListener("click", function () {
-    var msg = "I scored " + score + " on Sweep It Clean 🧹 Can you beat me?";
+  function doShare(msg, labelEl, restingText) {
     var url = "https://steadfastcleanco.com/play/";
     if (navigator.share) {
       navigator.share({ title: "Sweep It Clean", text: msg, url: url }).catch(function () {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(msg + " " + url).then(function () {
-        shareLabel.textContent = "Copied!";
-        setTimeout(function () { shareLabel.textContent = "Share my score"; }, 1600);
+        labelEl.textContent = "Copied!";
+        setTimeout(function () { labelEl.textContent = restingText; }, 1600);
       }).catch(function () {});
     }
+  }
+
+  var shareLabel = document.getElementById("shareLabel");
+  document.getElementById("shareBtn").addEventListener("click", function () {
+    doShare("I scored " + score + " on Sweep It Clean 🧹 Can you beat me?", shareLabel, "Share my score");
+  });
+
+  var shareLabelStart = document.getElementById("shareLabelStart");
+  document.getElementById("shareBtnStart").addEventListener("click", function () {
+    var msg = best > 0
+      ? "My best is " + best + " on Sweep It Clean 🧹 Can you beat it?"
+      : "Try Sweep It Clean, a 30-second cleaning game by Steadfast Cleaning Co. 🧹";
+    doShare(msg, shareLabelStart, "Share this game");
   });
 
   soundToggle.addEventListener("click", function () {
