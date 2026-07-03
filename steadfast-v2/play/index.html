@@ -586,8 +586,11 @@
   var goldenGrad = null;
 
   // Per-tile dirt: the floor starts grubby and the broom polishes it tile by
-  // tile. gleams are the white flashes when a tile first comes clean.
-  var dirt = new Float32Array(N * N);
+  // tile. gleams are the white flashes when a tile first comes clean. The
+  // dirt grid spans DN tiles per side — grown at resize so it covers all the
+  // floor visible in the frame, not just the back N x N room grid.
+  var DN = N;
+  var dirt = new Float32Array(DN * DN);
   var gleams = [];
 
   // Game state.
@@ -698,6 +701,22 @@
     ORX = W * 0.5;
     ORY = H * 0.16;
     WALL_H = H * 0.34 * ZOOM;
+
+    // Grow the sweepable dirt grid to reach the bottom of the frame (the
+    // checker art draws out to N + 8 tiles, so cap there). Polish progress
+    // on tiles that were already tracked carries over.
+    var newDN = clamp(Math.ceil((H - ORY) / (2 * TY)) + 1, N, N + 8);
+    if (newDN !== DN) {
+      var nd = new Float32Array(newDN * newDN);
+      var keep = Math.min(DN, newDN);
+      for (var dgy = 0; dgy < keep; dgy++) {
+        for (var dgx = 0; dgx < keep; dgx++) {
+          nd[dgy * newDN + dgx] = dirt[dgy * DN + dgx];
+        }
+      }
+      DN = newDN;
+      dirt = nd;
+    }
 
     buildBG();
 
@@ -912,6 +931,22 @@
     return "dust";
   }
 
+  // Pick a random spot on the open floor anywhere in the frame: sample the
+  // screen, project onto the floor, and reject walls, furniture footprints
+  // and the frame edges. This spreads mess across the whole visible kitchen
+  // instead of clustering it in the back N x N room grid.
+  function randFloorPoint() {
+    for (var t = 0; t < 24; t++) {
+      var fp = screenToFloor(rand(36, W - 36), rand(ORY + H * 0.05, H - 44));
+      var ix = fp.ix, iy = fp.iy;
+      if (ix < 0.6 || iy < 0.9) continue;        // on or behind the walls
+      if (ix < 2.2 && iy < 2.9) continue;        // fridge footprint
+      if (ix > 2.7 && iy < 1.6) continue;        // counter footprint
+      return { fx: ix / N, d: iy / N };
+    }
+    return { fx: rand(0.3, 0.9), d: rand(0.3, 0.9) };   // safe fallback
+  }
+
   function spawnItem() {
     var kind = pickType();
     if (kind === "web") {
@@ -938,18 +973,12 @@
       return;
     }
     var a = rand(0, TAU);
-    // Keep floor items out of the furniture footprints (fridge and counter
-    // sit against the walls, so require some depth or some distance right).
-    var fx = 0, d = 0, tries = 0;
-    do {
-      fx = rand(0.10, 0.92);
-      d = rand(0.14, 0.92);
-      tries++;
-    } while (tries < 8 && ((fx * N < 2.1 && d * N < 2.9) || (fx * N > 2.7 && d * N < 1.5)));
+    // Anywhere on the visible open floor, clear of the furniture footprints.
+    var pt = randFloorPoint();
     items.push({
       kind: kind,
-      fx: fx,
-      d: d,
+      fx: pt.fx,
+      d: pt.d,
       born: 0,
       seed: rand(0, TAU),
       vfx: Math.cos(a) * 0.17,
@@ -964,10 +993,11 @@
   }
 
   function spawnSparkle() {
+    var pt = randFloorPoint();
     items.push({
       kind: "sparkle",
-      fx: rand(0.15, 0.85),
-      d: rand(0.2, 0.85),
+      fx: pt.fx,
+      d: pt.d,
       born: 0,
       seed: rand(0, TAU),
       ttl: 3.0,
@@ -981,10 +1011,11 @@
   function spawnRoach() {
     var a = rand(0, TAU);
     var spd = rand(0.30, 0.42);
+    var pt = randFloorPoint();
     items.push({
       kind: "roach",
-      fx: rand(0.32, 0.88),
-      d: rand(0.26, 0.88),
+      fx: pt.fx,
+      d: pt.d,
       vfx: Math.cos(a) * spd,
       vd: Math.sin(a) * spd,
       turnT: rand(0.5, 1.2),
@@ -993,6 +1024,31 @@
       born: 0, seed: rand(0, TAU),
       flip: 1, h: 0, vh: 0, squashT: 0, hopT: 0
     });
+  }
+
+  // Bounce a wandering floor item off the walls, the furniture footprints,
+  // and the frame edges, so it can roam the whole visible floor.
+  function bounceFloor(m) {
+    var ix = m.fx * N, iy = m.d * N;
+    if (ix < 0.6) { m.fx = 0.6 / N; m.vfx = Math.abs(m.vfx); }
+    if (iy < 0.9) { m.d = 0.9 / N; m.vd = Math.abs(m.vd); }
+    if (ix < 2.2 && iy < 2.9) {          // fridge: push off the nearer face
+      if (2.2 - ix < 2.9 - iy) { m.fx = 2.2 / N; m.vfx = Math.abs(m.vfx); }
+      else { m.d = 2.9 / N; m.vd = Math.abs(m.vd); }
+    }
+    if (ix > 2.7 && iy < 1.6) { m.d = 1.6 / N; m.vd = Math.abs(m.vd); }
+    // Frame edges: screen x tracks (vfx - vd) and screen y tracks (vfx + vd),
+    // so swapping the pair reflects horizontally and negate-swapping
+    // reflects vertically.
+    var p = floorPos(m.fx, m.d, 0);
+    var t;
+    if ((p.x < 34 && m.vfx - m.vd < 0) || (p.x > W - 34 && m.vfx - m.vd > 0)) {
+      t = m.vfx; m.vfx = m.vd; m.vd = t;
+    }
+    if (p.y > H - 44 && m.vfx + m.vd > 0) {
+      t = m.vfx; m.vfx = -m.vd; m.vd = -t;
+    }
+    m.flip = m.vfx >= 0 ? 1 : -1;
   }
 
   // Startled by the broom: darts off in a fresh random direction.
@@ -1310,8 +1366,8 @@
           var gy = lerp(broom.py, broom.y, gi / steps) + 26;
           var fp = screenToFloor(gx, gy);
           var tx = Math.floor(fp.ix), ty = Math.floor(fp.iy);
-          if (tx >= 0 && tx < N && ty >= 0 && ty < N) {
-            var ti = ty * N + tx;
+          if (tx >= 0 && tx < DN && ty >= 0 && ty < DN) {
+            var ti = ty * DN + tx;
             if (dirt[ti] > 0) {
               dirt[ti] = Math.max(0, dirt[ti] - dt * 2.6 / (steps + 1) * 8);
               if (dirt[ti] === 0) {
@@ -1389,12 +1445,7 @@
           var drift = REDUCED ? 1 : 2.2;
           m.fx += m.vfx * drift * dt;
           m.d += m.vd * drift * dt;
-          // Stay clear of the furniture footprints along the walls.
-          if (m.fx < 0.27) { m.fx = 0.27; m.vfx = Math.abs(m.vfx); }
-          if (m.fx > 0.92) { m.fx = 0.92; m.vfx = -Math.abs(m.vfx); }
-          if (m.d < 0.20) { m.d = 0.20; m.vd = Math.abs(m.vd); }
-          if (m.d > 0.92) { m.d = 0.92; m.vd = -Math.abs(m.vd); }
-          m.flip = m.vfx >= 0 ? 1 : -1;
+          bounceFloor(m);
         }
       }
       if (m.kind === "roach") {
@@ -1412,12 +1463,7 @@
           }
           m.fx += m.vfx * dt;
           m.d += m.vd * dt;
-          // Bounce off the open-floor edges, clear of the fridge and counter.
-          if (m.fx < 0.27) { m.fx = 0.27; m.vfx = Math.abs(m.vfx); }
-          if (m.fx > 0.92) { m.fx = 0.92; m.vfx = -Math.abs(m.vfx); }
-          if (m.d < 0.20) { m.d = 0.20; m.vd = Math.abs(m.vd); }
-          if (m.d > 0.92) { m.d = 0.92; m.vd = -Math.abs(m.vd); }
-          m.flip = m.vfx >= 0 ? 1 : -1;
+          bounceFloor(m);
         }
       }
 
@@ -1448,12 +1494,12 @@
     if (endSweepT > 0) {
       endSweepT = Math.max(0, endSweepT - dt / 0.9);
       var waveX = lerp(-80, W + 80, 1 - endSweepT);
-      for (var wt = 0; wt < N * N; wt++) {
+      for (var wt = 0; wt < DN * DN; wt++) {
         if (dirt[wt] > 0) {
-          var wc = iso((wt % N) + 0.5, Math.floor(wt / N) + 0.5);
+          var wc = iso((wt % DN) + 0.5, Math.floor(wt / DN) + 0.5);
           if (wc.x < waveX) {
             dirt[wt] = 0;
-            gleams.push({ ix: wt % N, iy: Math.floor(wt / N), life: 1 });
+            gleams.push({ ix: wt % DN, iy: Math.floor(wt / DN), life: 1 });
           }
         }
       }
@@ -1846,16 +1892,21 @@
     ctx.fillStyle = "rgba(255,255,255,0.18)";
     ctx.beginPath(); ctx.ellipse(-3, -2.5, 4, 2, -0.5, 0, TAU); ctx.fill();
 
-    // head + antennae + beady eyes, all at the leading end
+    // head at the leading end
     ctx.fillStyle = "#43301F";
     ctx.beginPath(); ctx.ellipse(9, 0, 3.6, 4.2, 0, 0, TAU); ctx.fill();
-    ctx.strokeStyle = "#3A2A1E"; ctx.lineWidth = 1.2;
-    var aw = Math.sin(t * 15) * 2;
-    ctx.beginPath(); ctx.moveTo(11, -2); ctx.quadraticCurveTo(16, -6 + aw, 20, -4.5 + aw); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(11, 2); ctx.quadraticCurveTo(16, 6 - aw, 20, 4.5 - aw); ctx.stroke();
+    // googly eyes like the other critters, popped up either side of the
+    // head, pupils leading the direction of travel (+x is always forward
+    // here — the flip is handled by the scale above)
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(9.5, -3.6, 2.9, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(9.5, 3.6, 2.9, 0, TAU); ctx.fill();
     ctx.fillStyle = "#0F0A06";
-    ctx.beginPath(); ctx.arc(10, -2, 1, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(10, 2, 1, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(10.4, -3.6, 1.4, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(10.4, 3.6, 1.4, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath(); ctx.arc(10, -4.1, 0.55, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, 3.1, 0.55, 0, TAU); ctx.fill();
 
     ctx.restore();
   }
@@ -1972,7 +2023,7 @@
     var x = broom.x, y = broom.y;
     // shadow rhombus under the bristles
     var fp = screenToFloor(x - 6, y + 26);
-    if (fp.ix > -1 && fp.ix < N + 3 && fp.iy > -1 && fp.iy < N + 3) {
+    if (fp.ix > -1 && fp.ix < N + 8 && fp.iy > -1 && fp.iy < N + 8) {
       var sc = iso(fp.ix, fp.iy);
       ppoly([{x:sc.x-24,y:sc.y},{x:sc.x,y:sc.y-12},{x:sc.x+24,y:sc.y},{x:sc.x,y:sc.y+12}], "rgba(74,53,102,0.16)");
     }
@@ -2053,9 +2104,11 @@
     ctx.globalAlpha = 1;
 
     // per-tile dirt + gleam flashes
-    for (var ti = 0; ti < N * N; ti++) {
+    for (var ti = 0; ti < DN * DN; ti++) {
       if (dirt[ti] > 0.02) {
-        var dx2 = ti % N, dy2 = Math.floor(ti / N);
+        var dx2 = ti % DN, dy2 = Math.floor(ti / DN);
+        var dp0 = iso(dx2, dy2);
+        if (dp0.x < -PAD - TX * 2 || dp0.x > W + PAD + TX * 2 || dp0.y > H + PAD + TY * 3) continue;
         ppoly([iso(dx2,dy2), iso(dx2+1,dy2), iso(dx2+1,dy2+1), iso(dx2,dy2+1)],
           "rgba(122,106,88," + (dirt[ti] * 0.30).toFixed(3) + ")");
       }
