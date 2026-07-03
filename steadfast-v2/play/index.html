@@ -9,13 +9,13 @@
 <!-- Social share card -->
 <meta property="og:title" content="Sweep It Clean — the 30-second cleaning game">
 <meta property="og:description" content="Sweep up dust bunnies, flick cobwebs off the walls, and catch the goo monster. A tiny game by Steadfast Cleaning Co., Tampa Bay.">
-<meta property="og:image" content="https://steadfastcleanco.com/images/og-play.png">
+<meta property="og:image" content="https://steadfastcleanco.com/images/og-play-v2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://steadfastcleanco.com/play/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://steadfastcleanco.com/images/og-play.png">
+<meta name="twitter:image" content="https://steadfastcleanco.com/images/og-play-v2.png">
 
 <!-- Fonts: same load the rest of the site uses. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -476,7 +476,7 @@
       <!-- Start screen. -->
       <div class="overlay" id="startScreen">
         <h2 class="panel-title">Ready to tidy up?</h2>
-        <p class="panel-text">You have 30 seconds. Sweep the floor clear of dust bunnies and muddy boot prints, flick the cobwebs off the walls, catch the goo monster for big points, and grab the gold gem if one appears.</p>
+        <p class="panel-text">You have 30 seconds. Sweep the floor clear of dust bunnies and muddy boot prints, flick the cobwebs off the walls, catch the goo monster for big points, and squash the roach before it scurries off. Grab the gold gem if one appears.</p>
         <button class="btn" id="startBtn">Start sweeping</button>
         <p class="hint">Move your mouse or drag your finger.</p>
         <p class="hint" id="startBest" style="margin-top:6px;"></p>
@@ -609,6 +609,8 @@
 
   var spawnClock = 0;
   var bonusClock = 0;
+  var roachClock = 0;
+  var roachDelay = 5;
 
   var COMBO_WINDOW = 1.5;
   var comboStreak = 0;
@@ -639,11 +641,12 @@
 
   // Item type table. Webs live on the walls; everything else is floor mess.
   var TYPES = {
-    dust:      { value: 1, radius: 20, weight: 0.46 },
-    footprint: { value: 2, radius: 18, weight: 0.27 },
-    web:       { value: 3, radius: 20, weight: 0.15 },
-    slime:     { value: 5, radius: 24, weight: 0.12 },
-    sparkle:   { value: 8, radius: 18, weight: 0 }
+    dust:      { value: 1, radius: 20, weight: 0.34 },
+    footprint: { value: 2, radius: 18, weight: 0.26 },
+    web:       { value: 3, radius: 20, weight: 0.16 },
+    slime:     { value: 5, radius: 24, weight: 0.24 },
+    sparkle:   { value: 8, radius: 18, weight: 0 },
+    roach:     { value: 6, radius: 22, weight: 0 }
   };
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -949,6 +952,35 @@
     });
   }
 
+  // Roach: enters from one floor edge and scurries straight to the far side.
+  // If it reaches the opposite edge it escapes, so it has to be caught fast.
+  function spawnRoach() {
+    var speed = rand(0.34, 0.46);
+    var fx, d, vfx, vd;
+    if (Math.random() < 0.5) {
+      // runs across horizontally
+      var fromLeft = Math.random() < 0.5;
+      fx = fromLeft ? 0.03 : 0.97;
+      d = rand(0.30, 0.85);
+      vfx = fromLeft ? speed : -speed;
+      vd = rand(-0.04, 0.04);
+    } else {
+      // runs front-to-back or back-to-front
+      var fromFront = Math.random() < 0.5;
+      d = fromFront ? 0.95 : 0.18;
+      fx = rand(0.25, 0.85);
+      vd = fromFront ? -speed : speed;
+      vfx = rand(-0.04, 0.04);
+    }
+    items.push({
+      kind: "roach",
+      fx: fx, d: d, vfx: vfx, vd: vd,
+      born: 0, seed: rand(0, TAU),
+      flip: vfx >= 0 ? 1 : -1,
+      h: 0, vh: 0, squashT: 0, hopT: 0
+    });
+  }
+
   function difficulty() { return clamp(elapsed / ROUND, 0, 1); }
 
   function spawnInterval() {
@@ -1098,6 +1130,18 @@
         if (!hasSparkle) spawnSparkle();
       }
 
+      // A roach darts across now and then — one at a time, caught or it flees.
+      roachClock += dt;
+      if (roachClock >= roachDelay && timeLeft > 2.5) {
+        roachClock = 0;
+        roachDelay = rand(4.5, 8);
+        var hasRoach = false;
+        for (var rr = 0; rr < items.length; rr++) {
+          if (items[rr].kind === "roach") { hasRoach = true; break; }
+        }
+        if (!hasRoach) spawnRoach();
+      }
+
       if (comboTimer > 0) {
         comboTimer -= dt;
         if (comboTimer <= 0) { comboStreak = 0; comboMult = 1; }
@@ -1216,6 +1260,17 @@
           m.flip = m.vfx >= 0 ? 1 : -1;
         }
       }
+      if (m.kind === "roach") {
+        m.fx += m.vfx * dt;
+        m.d += m.vd * dt;
+        m.flip = m.vfx >= 0 ? 1 : -1;
+        // Reached the far edge and got away — remove it, no points.
+        if (m.fx < -0.06 || m.fx > 1.06 || m.d < -0.06 || m.d > 1.06) {
+          items.splice(i, 1);
+          continue;
+        }
+      }
+
       if (m.kind === "sparkle" && m.born >= m.ttl) items.splice(i, 1);
     }
 
@@ -1576,11 +1631,59 @@
     ctx.restore();
   }
 
+  // Roach: a quick brown scurrier. Legs paddle and antennae twitch as it runs.
+  function drawRoach(x, y, s, alpha, item) {
+    var t = item ? item.born : 0;
+    var face = item ? item.flip : 1;
+    // Quick fade-in so it doesn't pop onto the floor.
+    var a = alpha * (item ? clamp(item.born / 0.18, 0, 1) : 1);
+    ctx.save();
+    ctx.translate(x, y - 4 * s);
+    ctx.scale(face * s, s);
+    ctx.globalAlpha = a;
+
+    // six legs, paddling out of phase
+    ctx.strokeStyle = "#3A2A1E";
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = "round";
+    var legX = [-7, 0, 7];
+    for (var k = 0; k < legX.length; k++) {
+      var lx = legX[k];
+      var sw = Math.sin(t * 26 + k * 1.9) * 3.2;
+      ctx.beginPath(); ctx.moveTo(lx, -3); ctx.lineTo(lx - 5 + sw, -9.5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx, 3); ctx.lineTo(lx - 5 - sw, 9.5); ctx.stroke();
+    }
+
+    // body: dark underside, glossy brown shell, wing seam
+    ctx.fillStyle = "#2E2015";
+    ctx.beginPath(); ctx.ellipse(0, 0, 11, 7, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#5A3D26";
+    ctx.beginPath(); ctx.ellipse(-1, 0, 10.5, 6.4, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#3A2818"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(4, -5.4); ctx.lineTo(-3, 5.4); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.beginPath(); ctx.ellipse(-3, -2.5, 4, 2, -0.5, 0, TAU); ctx.fill();
+
+    // head + antennae + beady eyes, all at the leading end
+    ctx.fillStyle = "#43301F";
+    ctx.beginPath(); ctx.ellipse(9, 0, 3.6, 4.2, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#3A2A1E"; ctx.lineWidth = 1.2;
+    var aw = Math.sin(t * 15) * 2;
+    ctx.beginPath(); ctx.moveTo(11, -2); ctx.quadraticCurveTo(16, -6 + aw, 20, -4.5 + aw); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(11, 2); ctx.quadraticCurveTo(16, 6 - aw, 20, 4.5 - aw); ctx.stroke();
+    ctx.fillStyle = "#0F0A06";
+    ctx.beginPath(); ctx.arc(10, -2, 1, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, 2, 1, 0, TAU); ctx.fill();
+
+    ctx.restore();
+  }
+
   function drawItemShape(kind, x, y, s, alpha, item) {
     if (kind === "dust") drawDust(x, y, s, alpha, item);
     else if (kind === "footprint") drawFootprint(x, y, s, alpha, item);
     else if (kind === "slime") drawSlime(x, y, s, alpha, item);
     else if (kind === "sparkle") drawSparkle(x, y, s, alpha, item);
+    else if (kind === "roach") drawRoach(x, y, s, alpha, item);
     else drawWeb(x, y, s, alpha, item);
   }
 
