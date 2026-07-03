@@ -752,8 +752,8 @@
     bpoly([wallB(5.1,WALL_H*0.70), wallB(5.6,WALL_H*0.73), wallB(5.75,WALL_H*0.60), wallB(5.25,WALL_H*0.57)], "#C89BC4");
 
     // floor: chunky checker tiles spilling past the frame
-    for (var ix = 0; ix < N + 4; ix++) {
-      for (var iy = 0; iy < N + 4; iy++) {
+    for (var ix = 0; ix < N + 8; ix++) {
+      for (var iy = 0; iy < N + 8; iy++) {
         var pt = iso(ix, iy);
         if (pt.x < -PAD - TX * 2 || pt.x > W + PAD + TX * 2 || pt.y > H + PAD + TY * 3) continue;
         bpoly([iso(ix,iy), iso(ix+1,iy), iso(ix+1,iy+1), iso(ix,iy+1)], ((ix+iy)%2===0) ? "#FDF8ED" : "#EBDFC6");
@@ -806,7 +806,7 @@
     }
     vox(3.5, 0.35, 3.95, 0.8, WALL_H*0.34, WALL_H*0.43, "#C99979", "#B98A6B", "#A87A5C");
     vox(3.42, 0.27, 4.03, 0.88, WALL_H*0.43, WALL_H*0.62, "#8FB570", "#7BA05B", "#66884A");
-    // toaster on the counter (two slots + a slice of toast popping out)
+    // toaster on the counter (two slots)
     var tsT = WALL_H*0.47;
     vox(6.02, 0.46, 6.52, 0.82, WALL_H*0.34, tsT, "#C6B6E4", "#AD97D4", "#8F79C0");
     // two dark slots across the top
@@ -815,25 +815,6 @@
     }
     slot(0.55, 0.60);
     slot(0.68, 0.73);
-    // a slice of toast rising out of the back slot: its base follows the slot's
-    // diagonal, and the slot's front lip is redrawn over it so it reads as inserted
-    var tbL = iso(6.18, 0.575, tsT);
-    var tbR = iso(6.36, 0.575, tsT);
-    var trise = 15;
-    g.fillStyle = "#E0B579";
-    g.beginPath();
-    g.moveTo(tbL.x, tbL.y);
-    g.lineTo(tbL.x, tbL.y - trise);
-    g.quadraticCurveTo((tbL.x + tbR.x) / 2, Math.min(tbL.y, tbR.y) - trise - 8, tbR.x, tbR.y - trise);
-    g.lineTo(tbR.x, tbR.y);
-    g.closePath(); g.fill();
-    g.strokeStyle = "#B67B3E"; g.lineWidth = 2.4; g.lineCap = "round";  // toasted crown
-    g.beginPath();
-    g.moveTo(tbL.x, tbL.y - trise + 0.5);
-    g.quadraticCurveTo((tbL.x + tbR.x) / 2, Math.min(tbL.y, tbR.y) - trise - 7.5, tbR.x, tbR.y - trise + 0.5);
-    g.stroke();
-    // front lip of the slot, over the toast's base so it sits down inside it
-    gpoly([iso(6.14, 0.575, tsT), iso(6.4, 0.575, tsT), iso(6.4, 0.6, tsT), iso(6.14, 0.6, tsT)], "#3B2A54");
     // browning lever on the front-right face
     var lv = iso(6.52, 0.63, WALL_H*0.42);
     g.fillStyle = "#5B4380";
@@ -1055,15 +1036,16 @@
     }
   }
 
-  // Test a tap/click against live roaches; stomp the first one hit.
+  // Test a tap/click against live roaches; stomp the first one hit. Measured
+  // from the bristle head (where the broom visually lands), not the grip point.
   function tryStomp() {
-    var cx = broom.x, cy = broom.y;
+    var cx = broom.x - 6, cy = broom.y + 26;
     for (var i = items.length - 1; i >= 0; i--) {
       var it = items[i];
       if (it.kind !== "roach" || it.squished) continue;
       var p = itemPos(it);
       var dx = p.x - cx, dy = p.y - cy;
-      var rr = TYPES.roach.radius + 16;   // generous tap target for a moving bug
+      var rr = TYPES.roach.radius + 24;   // generous tap target for a moving bug
       if (dx * dx + dy * dy < rr * rr) {
         stompRoach(it, p.x, p.y);
         return true;
@@ -2211,7 +2193,7 @@
       ctx.fillStyle = "#7B4FBE";
       ctx.textAlign = "center";
       ctx.font = banner.size || "700 32px 'Playfair Display', serif";
-      ctx.fillText(banner.text, W / 2, H * 0.40);
+      ctx.fillText(banner.text, W / 2, H * 0.88);
       ctx.globalAlpha = 1;
     }
 
