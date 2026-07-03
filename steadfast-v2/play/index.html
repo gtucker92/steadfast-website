@@ -62,7 +62,7 @@
 
   .wrap {
     width: 100%;
-    max-width: 620px;
+    max-width: 860px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -87,9 +87,9 @@
   .title {
     font-family: 'Lilita One', 'DM Sans', sans-serif;
     font-weight: 400;
-    font-size: clamp(42px, 10vw, 66px);
+    font-size: clamp(38px, 9vw, 58px);
     line-height: 1;
-    margin: 0 0 22px;
+    margin: 0 0 12px;
     text-align: center;
     color: var(--purple-mid);
     letter-spacing: 0.01em;
@@ -133,7 +133,7 @@
     position: relative;
     width: 100%;
     aspect-ratio: 5 / 6;
-    max-height: 72vh;
+    max-height: 84vh;
     border: none;
     border-radius: 30px;
     overflow: hidden;
@@ -476,7 +476,7 @@
       <!-- Start screen. -->
       <div class="overlay" id="startScreen">
         <h2 class="panel-title">Ready to tidy up?</h2>
-        <p class="panel-text">You have 30 seconds. Sweep the floor clear of dust bunnies and muddy boot prints, flick the cobwebs off the walls, catch the goo monster for big points, and squash the roach before it scurries off. Grab the gold gem if one appears.</p>
+        <p class="panel-text">You have 30 seconds. Sweep the floor clear of dust bunnies and muddy boot prints, flick the cobwebs off the walls, and catch the goo monster for big points. A roach won't sweep — tap it to stomp it, then sweep up the mess. Grab the gold gem if one appears.</p>
         <button class="btn" id="startBtn">Start sweeping</button>
         <p class="hint">Move your mouse or drag your finger.</p>
         <p class="hint" id="startBest" style="margin-top:6px;"></p>
@@ -610,7 +610,16 @@
   var spawnClock = 0;
   var bonusClock = 0;
   var roachClock = 0;
-  var roachDelay = 5;
+  var roachDelay = 3.5;
+  var roachHintShown = false;
+
+  // Coffee spill: a puddle that appears mid-round and spreads until mopped.
+  var spill = null;
+  var spillDone = false;
+  var SPILL_MAX = 0.46;    // radius in floor units before it caps
+  var SPILL_GROW = 0.032;  // spread per second if ignored
+  var SPILL_MOP = 0.24;    // shrink per second while swept
+  var mopT = 0;            // >0 while actively mopping: broom shows as a mop
 
   var COMBO_WINDOW = 1.5;
   var comboStreak = 0;
@@ -646,7 +655,8 @@
     web:       { value: 3, radius: 20, weight: 0.16 },
     slime:     { value: 5, radius: 24, weight: 0.24 },
     sparkle:   { value: 8, radius: 18, weight: 0 },
-    roach:     { value: 6, radius: 22, weight: 0 }
+    roach:     { value: 2, radius: 22, weight: 0 },
+    fallenmug: { value: 3, radius: 22, weight: 0 }
   };
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -680,11 +690,14 @@
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    TX = W * 0.094;
-    TY = W * 0.049;
+    // ZOOM < 1 pulls the camera back so more of the floor fits in the frame,
+    // which enlarges the reachable play area and shrinks the broom's coverage.
+    var ZOOM = 0.78;
+    TX = W * 0.094 * ZOOM;
+    TY = W * 0.049 * ZOOM;
     ORX = W * 0.5;
-    ORY = H * 0.19;
-    WALL_H = H * 0.36;
+    ORY = H * 0.16;
+    WALL_H = H * 0.34 * ZOOM;
 
     buildBG();
 
@@ -793,9 +806,39 @@
     }
     vox(3.5, 0.35, 3.95, 0.8, WALL_H*0.34, WALL_H*0.43, "#C99979", "#B98A6B", "#A87A5C");
     vox(3.42, 0.27, 4.03, 0.88, WALL_H*0.43, WALL_H*0.62, "#8FB570", "#7BA05B", "#66884A");
-    vox(6.0, 0.4, 6.55, 0.85, WALL_H*0.34, WALL_H*0.50, "#8A5FCB", "#7B4FBE", "#5B4380");
-    var kp = iso(6.0, 0.62, WALL_H*0.46);
-    gpoly([{x:kp.x,y:kp.y},{x:kp.x-10,y:kp.y-3},{x:kp.x-10,y:kp.y+4},{x:kp.x,y:kp.y+5}], "#5B4380");
+    // toaster on the counter (two slots + a slice of toast popping out)
+    var tsT = WALL_H*0.47;
+    vox(6.02, 0.46, 6.52, 0.82, WALL_H*0.34, tsT, "#C6B6E4", "#AD97D4", "#8F79C0");
+    // two dark slots across the top
+    function slot(iy0, iy1) {
+      gpoly([iso(6.14, iy0, tsT), iso(6.4, iy0, tsT), iso(6.4, iy1, tsT), iso(6.14, iy1, tsT)], "#3B2A54");
+    }
+    slot(0.55, 0.60);
+    slot(0.68, 0.73);
+    // a slice of toast rising out of the back slot: its base follows the slot's
+    // diagonal, and the slot's front lip is redrawn over it so it reads as inserted
+    var tbL = iso(6.18, 0.575, tsT);
+    var tbR = iso(6.36, 0.575, tsT);
+    var trise = 15;
+    g.fillStyle = "#E0B579";
+    g.beginPath();
+    g.moveTo(tbL.x, tbL.y);
+    g.lineTo(tbL.x, tbL.y - trise);
+    g.quadraticCurveTo((tbL.x + tbR.x) / 2, Math.min(tbL.y, tbR.y) - trise - 8, tbR.x, tbR.y - trise);
+    g.lineTo(tbR.x, tbR.y);
+    g.closePath(); g.fill();
+    g.strokeStyle = "#B67B3E"; g.lineWidth = 2.4; g.lineCap = "round";  // toasted crown
+    g.beginPath();
+    g.moveTo(tbL.x, tbL.y - trise + 0.5);
+    g.quadraticCurveTo((tbL.x + tbR.x) / 2, Math.min(tbL.y, tbR.y) - trise - 7.5, tbR.x, tbR.y - trise + 0.5);
+    g.stroke();
+    // front lip of the slot, over the toast's base so it sits down inside it
+    gpoly([iso(6.14, 0.575, tsT), iso(6.4, 0.575, tsT), iso(6.4, 0.6, tsT), iso(6.14, 0.6, tsT)], "#3B2A54");
+    // browning lever on the front-right face
+    var lv = iso(6.52, 0.63, WALL_H*0.42);
+    g.fillStyle = "#5B4380";
+    g.fillRect(lv.x - 1.5, lv.y - 8, 3.5, 9);
+    g.beginPath(); g.arc(lv.x, lv.y - 8, 2.6, 0, TAU); g.fill();
 
     // pendant lamp over the open floor
     var lp = iso(2.4, 3.6, H*0.315);
@@ -952,33 +995,81 @@
     });
   }
 
-  // Roach: enters from one floor edge and scurries straight to the far side.
-  // If it reaches the opposite edge it escapes, so it has to be caught fast.
+  // Roach: skitters around the floor and won't leave. Sweeping can't kill it —
+  // it has to be tapped/clicked to stomp, then the squished remains swept up.
   function spawnRoach() {
-    var speed = rand(0.34, 0.46);
-    var fx, d, vfx, vd;
-    if (Math.random() < 0.5) {
-      // runs across horizontally
-      var fromLeft = Math.random() < 0.5;
-      fx = fromLeft ? 0.03 : 0.97;
-      d = rand(0.30, 0.85);
-      vfx = fromLeft ? speed : -speed;
-      vd = rand(-0.04, 0.04);
-    } else {
-      // runs front-to-back or back-to-front
-      var fromFront = Math.random() < 0.5;
-      d = fromFront ? 0.95 : 0.18;
-      fx = rand(0.25, 0.85);
-      vd = fromFront ? -speed : speed;
-      vfx = rand(-0.04, 0.04);
-    }
+    var a = rand(0, TAU);
+    var spd = rand(0.30, 0.42);
     items.push({
       kind: "roach",
-      fx: fx, d: d, vfx: vfx, vd: vd,
+      fx: rand(0.32, 0.88),
+      d: rand(0.26, 0.88),
+      vfx: Math.cos(a) * spd,
+      vd: Math.sin(a) * spd,
+      turnT: rand(0.5, 1.2),
+      squished: false,
+      squishT2: 0,
       born: 0, seed: rand(0, TAU),
-      flip: vfx >= 0 ? 1 : -1,
-      h: 0, vh: 0, squashT: 0, hopT: 0
+      flip: 1, h: 0, vh: 0, squashT: 0, hopT: 0
     });
+  }
+
+  // Startled by the broom: darts off in a fresh random direction.
+  function roachDodge(m) {
+    var a = rand(0, TAU);
+    var spd = rand(0.44, 0.56);
+    m.vfx = Math.cos(a) * spd;
+    m.vd = Math.sin(a) * spd;
+    m.turnT = rand(0.4, 0.9);
+  }
+
+  // Tap landed on a live roach: squish it into a sweepable splat.
+  function stompRoach(m, px, py) {
+    m.squished = true;
+    m.squishT2 = 0;
+    m.vfx = 0; m.vd = 0;
+
+    if (comboTimer > 0) comboStreak++; else comboStreak = 1;
+    comboTimer = COMBO_WINDOW;
+    comboMult = Math.min(5, Math.floor((comboStreak - 1) / 2) + 1);
+    score += 5 * comboMult;
+    hudScore.textContent = score;
+    var pill = hudScore.parentNode;
+    pill.classList.remove("bump");
+    void pill.offsetWidth;
+    pill.classList.add("bump");
+
+    blip(150, 0.07, "square", 0.16);
+    blip(90, 0.10, "square", 0.12);
+    if (navigator.vibrate) navigator.vibrate(32);
+
+    var count = REDUCED ? 5 : 12;
+    for (var i = 0; i < count; i++) {
+      var a = rand(0, TAU), sp = rand(30, 190);
+      flecks.push({
+        x: px, y: py,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 50,
+        r: rand(1.5, 3), color: Math.random() < 0.5 ? "#5A3D26" : "#6F9250",
+        life: 1
+      });
+    }
+  }
+
+  // Test a tap/click against live roaches; stomp the first one hit.
+  function tryStomp() {
+    var cx = broom.x, cy = broom.y;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      if (it.kind !== "roach" || it.squished) continue;
+      var p = itemPos(it);
+      var dx = p.x - cx, dy = p.y - cy;
+      var rr = TYPES.roach.radius + 16;   // generous tap target for a moving bug
+      if (dx * dx + dy * dy < rr * rr) {
+        stompRoach(it, p.x, p.y);
+        return true;
+      }
+    }
+    return false;
   }
 
   function difficulty() { return clamp(elapsed / ROUND, 0, 1); }
@@ -1085,7 +1176,7 @@
     items.splice(idx, 1);
   }
 
-  function checkSweeps() {
+  function checkSweeps(dt) {
     if (!broom.active) return;
     if (Math.hypot(broom.vx, broom.vy) < 60) return;
     // Contact circle sits on the chunky bristle head below the grip point.
@@ -1100,7 +1191,47 @@
       var dx = p.x - bx;
       var dy = p.y - by;
       if (dx * dx + dy * dy < (broomR + ir) * (broomR + ir)) {
+        if (it.kind === "roach") {
+          if (!it.squished) {
+            // Sweeping won't kill a live roach — it darts off. Hint once.
+            roachDodge(it);
+            if (!roachHintShown) {
+              roachHintShown = true;
+              banner = { text: "Tap the roach to stomp it!", life: 2.4, size: "600 20px 'DM Sans', sans-serif" };
+            }
+            continue;
+          }
+          if (it.squishT2 < 0.2) continue;   // let the splat land before it's swept
+        }
         sweepItem(it, i, p.x, p.y);
+      }
+    }
+
+    // Mopping the coffee spill: the broom shrinks it where it passes over.
+    if (spill) {
+      var scp = floorPos(spill.fx, spill.d, 0);
+      var scr = spill.r * N * TX;                 // approx horizontal screen radius
+      var rx = scr + broomR, ry = scr * 0.55 + broomR;
+      var ex = scp.x - bx, ey = scp.y - by;
+      if ((ex * ex) / (rx * rx) + (ey * ey) / (ry * ry) < 1) {
+        mopT = 0.25;   // broom shows as a mop while (and just after) cleaning
+        spill.r = Math.max(0, spill.r - SPILL_MOP * dt);
+        if (!REDUCED && Math.random() < 0.6) {
+          flecks.push({
+            x: bx + rand(-10, 10), y: by + rand(-6, 6),
+            vx: rand(-40, 40), vy: rand(-120, -40),
+            r: rand(1.5, 3), color: Math.random() < 0.5 ? "#5A3A20" : "#7A5636", life: 1
+          });
+        }
+        if (spill.r <= 0.001) {
+          spill = null;
+          score += 10;
+          hudScore.textContent = score;
+          var mpill = hudScore.parentNode;
+          mpill.classList.remove("bump"); void mpill.offsetWidth; mpill.classList.add("bump");
+          floaters.push({ x: scp.x, y: scp.y, text: "+10  mopped!", life: 1 });
+          sparkleChime();
+        }
       }
     }
   }
@@ -1130,17 +1261,41 @@
         if (!hasSparkle) spawnSparkle();
       }
 
-      // A roach darts across now and then — one at a time, caught or it flees.
+      // Roaches skitter in fairly often and linger until stomped — up to three.
       roachClock += dt;
-      if (roachClock >= roachDelay && timeLeft > 2.5) {
+      if (roachClock >= roachDelay && timeLeft > 2) {
         roachClock = 0;
-        roachDelay = rand(4.5, 8);
-        var hasRoach = false;
+        roachDelay = rand(2.8, 4.8);
+        var roachCount = 0;
         for (var rr = 0; rr < items.length; rr++) {
-          if (items[rr].kind === "roach") { hasRoach = true; break; }
+          if (items[rr].kind === "roach" && !items[rr].squished) roachCount++;
         }
-        if (!hasRoach) spawnRoach();
+        if (roachCount < 3) spawnRoach();
       }
+
+      // Ten seconds in, the mug tips off the counter and the spill begins.
+      if (!spillDone && elapsed >= 10) {
+        spillDone = true;
+        spill = { fx: 0.61, d: 0.30, r: 0.02, settled: false };
+        // The tipped mug lands on the floor as its own sweepable mess.
+        items.push({
+          kind: "fallenmug", fx: 0.60, d: 0.19,
+          born: 0, seed: rand(0, TAU), vfx: 0, vd: 0, flip: 1,
+          h: 0, vh: 0, squashT: 0.16, hopT: 0
+        });
+        banner = { text: "Oops — coffee spill! Mop it up!", life: 2.8, size: "600 17px 'DM Sans', sans-serif" };
+        blip(210, 0.14, "sine", 0.13);
+        if (navigator.vibrate) navigator.vibrate(22);
+      }
+      if (spill) {
+        if (!spill.settled) {
+          spill.r += 0.32 * dt;                    // pour out and spread quickly
+          if (spill.r >= 0.18) { spill.r = 0.18; spill.settled = true; }
+        } else {
+          spill.r = Math.min(SPILL_MAX, spill.r + SPILL_GROW * dt);   // slow creep
+        }
+      }
+      if (mopT > 0) mopT = Math.max(0, mopT - dt);
 
       if (comboTimer > 0) {
         comboTimer -= dt;
@@ -1161,7 +1316,7 @@
         }
       }
 
-      checkSweeps();
+      checkSweeps(dt);
 
       // Polish the tiles under the moving broom. broom.px/py still hold last
       // frame's position, so the stroke covers the whole segment.
@@ -1261,13 +1416,26 @@
         }
       }
       if (m.kind === "roach") {
-        m.fx += m.vfx * dt;
-        m.d += m.vd * dt;
-        m.flip = m.vfx >= 0 ? 1 : -1;
-        // Reached the far edge and got away — remove it, no points.
-        if (m.fx < -0.06 || m.fx > 1.06 || m.d < -0.06 || m.d > 1.06) {
-          items.splice(i, 1);
-          continue;
+        if (m.squished) {
+          m.squishT2 += dt;
+        } else {
+          // Skittish: pick a fresh heading every so often.
+          m.turnT -= dt;
+          if (m.turnT <= 0) {
+            var ra = rand(0, TAU);
+            var rsp = rand(0.28, 0.42);
+            m.vfx = Math.cos(ra) * rsp;
+            m.vd = Math.sin(ra) * rsp;
+            m.turnT = rand(0.5, 1.2);
+          }
+          m.fx += m.vfx * dt;
+          m.d += m.vd * dt;
+          // Bounce off the open-floor edges, clear of the fridge and counter.
+          if (m.fx < 0.27) { m.fx = 0.27; m.vfx = Math.abs(m.vfx); }
+          if (m.fx > 0.92) { m.fx = 0.92; m.vfx = -Math.abs(m.vfx); }
+          if (m.d < 0.20) { m.d = 0.20; m.vd = Math.abs(m.vd); }
+          if (m.d > 0.92) { m.d = 0.92; m.vd = -Math.abs(m.vd); }
+          m.flip = m.vfx >= 0 ? 1 : -1;
         }
       }
 
@@ -1633,6 +1801,38 @@
 
   // Roach: a quick brown scurrier. Legs paddle and antennae twitch as it runs.
   function drawRoach(x, y, s, alpha, item) {
+    // Squished: a flat splat with legs splayed out and X'd eyes, sweepable.
+    if (item && item.squished) {
+      var pop = clamp(item.squishT2 / 0.16, 0, 1);
+      var sc = 1 + (1 - pop) * 0.45;   // brief squish flash on impact
+      ctx.save();
+      ctx.translate(x, y - 2 * s);
+      ctx.scale(s * sc, s * sc * 0.9);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "rgba(90,61,38,0.26)";
+      ctx.beginPath(); ctx.ellipse(0, 1, 15, 8, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "#3A2A1E"; ctx.lineWidth = 1.5; ctx.lineCap = "round";
+      var legDirs = [[-11,-6],[-13,0],[-11,6],[11,-6],[13,0],[11,6]];
+      for (var lk = 0; lk < legDirs.length; lk++) {
+        ctx.beginPath();
+        ctx.moveTo(legDirs[lk][0] * 0.4, legDirs[lk][1] * 0.4);
+        ctx.lineTo(legDirs[lk][0], legDirs[lk][1]);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#6E4B2F";
+      ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#8A6440";
+      ctx.beginPath(); ctx.ellipse(0, -0.5, 6, 3, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "#2E2015"; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(5.5, -1.5); ctx.lineTo(8.5, 1.5); ctx.moveTo(8.5, -1.5); ctx.lineTo(5.5, 1.5);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(111,146,80,0.6)";
+      ctx.beginPath(); ctx.arc(-8, 3, 1.6, 0, TAU); ctx.fill();
+      ctx.restore();
+      return;
+    }
+
     var t = item ? item.born : 0;
     var face = item ? item.flip : 1;
     // Quick fade-in so it doesn't pop onto the floor.
@@ -1678,12 +1878,109 @@
     ctx.restore();
   }
 
+  // Steaming coffee mug on the counter — vanishes once it has spilled.
+  function drawMug() {
+    if (spillDone) return;
+    var b = iso(4.7, 0.62, WALL_H * 0.34);
+    var k = TX / 50;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.scale(k, k);
+    // contact shadow on the counter
+    ctx.fillStyle = "rgba(74,53,102,0.16)";
+    ctx.beginPath(); ctx.ellipse(0, 0, 11, 5, 0, 0, TAU); ctx.fill();
+    // cup body
+    ctx.fillStyle = "#F0E8FA";
+    ctx.beginPath();
+    ctx.moveTo(-8, -2); ctx.lineTo(8, -2); ctx.lineTo(7, -19); ctx.lineTo(-7, -19); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#DBCDEC";   // shaded side
+    ctx.beginPath();
+    ctx.moveTo(2, -2.4); ctx.lineTo(8, -2); ctx.lineTo(7, -19); ctx.lineTo(2, -19); ctx.closePath(); ctx.fill();
+    // handle
+    ctx.strokeStyle = "#DBCDEC"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(9, -11, 4.6, -1.2, 1.2); ctx.stroke();
+    // rim + coffee surface
+    ctx.fillStyle = "#F6F1FB";
+    ctx.beginPath(); ctx.ellipse(0, -19, 7.2, 3, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#5A3A20";
+    ctx.beginPath(); ctx.ellipse(0, -19, 5.4, 2.1, 0, 0, TAU); ctx.fill();
+    // steam
+    if (!REDUCED) {
+      ctx.strokeStyle = "rgba(150,132,120,0.5)"; ctx.lineWidth = 1.5; ctx.lineCap = "round";
+      var t = worldT * 2;
+      ctx.beginPath(); ctx.moveTo(-2, -21); ctx.quadraticCurveTo(-5, -27 + Math.sin(t) * 1.6, -2, -34); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3, -21); ctx.quadraticCurveTo(6, -27 + Math.cos(t) * 1.6, 3, -33); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // The tipped-over mug lies on the floor by the puddle once it has spilled —
+  // its own sweepable mess, so you clear the mug and mop the coffee.
+  function drawFallenMug(x, y, s, alpha, item) {
+    var k = (TX / 50) * s;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(k, k);
+    ctx.globalAlpha = alpha;
+    // contact shadow
+    ctx.fillStyle = "rgba(74,53,102,0.18)";
+    ctx.beginPath(); ctx.ellipse(-1, 2, 15, 5.5, 0, 0, TAU); ctx.fill();
+    // handle behind the body (up and to the left)
+    ctx.strokeStyle = "#C7B8E0"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(-11, -6, 4.6, Math.PI * 0.9, Math.PI * 2.05); ctx.stroke();
+    // body lying on its side (capsule) with a shaded underside
+    ctx.fillStyle = "#EBE3F6";
+    ctx.beginPath();
+    ctx.moveTo(-12, -12); ctx.lineTo(8, -12); ctx.lineTo(8, -1); ctx.lineTo(-12, -1); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-12, -6.5, 4.5, 5.5, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#D3C6E6";
+    ctx.beginPath();
+    ctx.moveTo(-12, -4); ctx.lineTo(8, -4); ctx.lineTo(8, -1); ctx.lineTo(-12, -1); ctx.closePath(); ctx.fill();
+    // open mouth facing the puddle (right end): rim then dark coffee interior
+    ctx.fillStyle = "#F4EFFB";
+    ctx.beginPath(); ctx.ellipse(8, -6.5, 4.6, 6, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#3E2A1A";
+    ctx.beginPath(); ctx.ellipse(9, -6.5, 3, 4.4, 0, 0, TAU); ctx.fill();
+    // a little coffee tongue spilling out of the mouth toward the puddle
+    ctx.fillStyle = "rgba(74,48,28,0.80)";
+    ctx.beginPath();
+    ctx.moveTo(9, -3); ctx.quadraticCurveTo(15, 3, 22, 6);
+    ctx.quadraticCurveTo(15, 8, 9, -1); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // Coffee puddle on the floor: a wobbly brown blob that grows until mopped.
+  function drawSpill() {
+    if (!spill) return;
+    var c = floorPos(spill.fx, spill.d, 0);
+    var R = spill.r * N * TX;
+    var RY = R * (TY / TX);
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.fillStyle = "rgba(74,48,28,0.80)";
+    ctx.beginPath();
+    var pts = 16;
+    for (var i = 0; i <= pts; i++) {
+      var a = i / pts * TAU;
+      var wob = 1 + Math.sin(a * 3 + spill.d * 12) * 0.11 + Math.sin(a * 5 + 1.5) * 0.05;
+      var x = Math.cos(a) * R * wob;
+      var y = Math.sin(a) * RY * wob;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.fill();
+    // glossy sheen
+    ctx.fillStyle = "rgba(150,110,70,0.32)";
+    ctx.beginPath(); ctx.ellipse(-R * 0.22, -RY * 0.22, R * 0.42, RY * 0.42, 0, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+
   function drawItemShape(kind, x, y, s, alpha, item) {
     if (kind === "dust") drawDust(x, y, s, alpha, item);
     else if (kind === "footprint") drawFootprint(x, y, s, alpha, item);
     else if (kind === "slime") drawSlime(x, y, s, alpha, item);
     else if (kind === "sparkle") drawSparkle(x, y, s, alpha, item);
     else if (kind === "roach") drawRoach(x, y, s, alpha, item);
+    else if (kind === "fallenmug") drawFallenMug(x, y, s, alpha, item);
     else drawWeb(x, y, s, alpha, item);
   }
 
@@ -1704,21 +2001,42 @@
     // fat two-tone handle
     ppoly([{x:7,y:-96},{x:13,y:-94},{x:1,y:-6},{x:-5,y:-7}], "#6B4C8F");
     ppoly([{x:7,y:-96},{x:10,y:-95},{x:-2,y:-6.5},{x:-5,y:-7}], "#8A5FCB");
-    // leaf
-    ppoly([{x:12,y:-75},{x:27,y:-84},{x:15,y:-69}], "#7BA05B");
-    ppoly([{x:12,y:-75},{x:25,y:-73},{x:15,y:-69}], "#8FB570");
-    // binding
-    ppoly([{x:-14,y:-9},{x:10,y:-9},{x:8,y:2},{x:-12,y:2}], "#3B2A54");
-    // bristle slats, dragging behind the motion
-    var bend = clamp(-broom.vx * 0.0003, -8, 8);
-    var tips = [-35 + bend, -23 + bend, -11 + bend, 1 + bend, 12 + bend, 22 + bend];
-    for (var b = 0; b < 5; b++) {
-      ppoly([
-        {x:-12 + b * 4.6, y: 1}, {x:-7.4 + b * 4.6, y: 1},
-        {x: tips[b + 1], y: 27}, {x: tips[b], y: 27}
-      ], b % 2 === 0 ? "#7B4FBE" : "#5B4380");
+
+    if (mopT > 0) {
+      // Mop head: a purple collar with drooping cream strands, a few of them
+      // coffee-stained. Splays out in the drag direction like the bristles do.
+      var mbend = clamp(-broom.vx * 0.0005, -14, 14);
+      ppoly([{x:-13,y:-7},{x:11,y:-7},{x:9,y:5},{x:-11,y:5}], "#5B4380");
+      ppoly([{x:-13,y:-7},{x:11,y:-7},{x:10,y:-3.5},{x:-12,y:-3.5}], "#7B4FBE");
+      ctx.lineCap = "round";
+      for (var ms = 0; ms < 11; ms++) {
+        var topx = -12 + ms * 2.4;
+        var botx = topx * 1.5 + mbend * (0.5 + Math.abs(ms - 5) * 0.05);
+        var midx = (topx + botx) / 2 + Math.sin(ms * 1.7) * 2.2;
+        ctx.strokeStyle = (ms % 3 === 0) ? "#7A5636" : (ms % 2 ? "#D6CEBD" : "#ECE5D6");
+        ctx.lineWidth = 2.7;
+        ctx.beginPath();
+        ctx.moveTo(topx, 3);
+        ctx.quadraticCurveTo(midx, 20, botx, 33 + (ms % 2) * 2);
+        ctx.stroke();
+      }
+    } else {
+      // leaf
+      ppoly([{x:12,y:-75},{x:27,y:-84},{x:15,y:-69}], "#7BA05B");
+      ppoly([{x:12,y:-75},{x:25,y:-73},{x:15,y:-69}], "#8FB570");
+      // binding
+      ppoly([{x:-14,y:-9},{x:10,y:-9},{x:8,y:2},{x:-12,y:2}], "#3B2A54");
+      // bristle slats, dragging behind the motion
+      var bend = clamp(-broom.vx * 0.0003, -8, 8);
+      var tips = [-35 + bend, -23 + bend, -11 + bend, 1 + bend, 12 + bend, 22 + bend];
+      for (var b = 0; b < 5; b++) {
+        ppoly([
+          {x:-12 + b * 4.6, y: 1}, {x:-7.4 + b * 4.6, y: 1},
+          {x: tips[b + 1], y: 27}, {x: tips[b], y: 27}
+        ], b % 2 === 0 ? "#7B4FBE" : "#5B4380");
+      }
+      ppoly([{x:-35 + bend,y:27},{x:22 + bend,y:27},{x:19 + bend,y:32},{x:-31 + bend,y:32}], "#4A3566");
     }
-    ppoly([{x:-35 + bend,y:27},{x:22 + bend,y:27},{x:19 + bend,y:32},{x:-31 + bend,y:32}], "#4A3566");
     ctx.restore();
   }
 
@@ -1796,6 +2114,10 @@
 
     // furniture layer covers the dirt on the tiles behind it
     if (fgCanvas) ctx.drawImage(fgCanvas, -PAD, -PAD, W + PAD * 2, H + PAD * 2);
+
+    // the coffee spill sits on the floor; the mug sits up on the counter.
+    // Guarded so a drawing hiccup here can never blank the whole frame.
+    try { drawSpill(); drawMug(); } catch (e) {}
 
     // items: flat footprints first, then walls, then volumetric back-to-front
     var i, it, p;
@@ -1888,7 +2210,7 @@
       ctx.globalAlpha = clamp(banner.life, 0, 1);
       ctx.fillStyle = "#7B4FBE";
       ctx.textAlign = "center";
-      ctx.font = "700 32px 'Playfair Display', serif";
+      ctx.font = banner.size || "700 32px 'Playfair Display', serif";
       ctx.fillText(banner.text, W / 2, H * 0.40);
       ctx.globalAlpha = 1;
     }
@@ -1908,13 +2230,20 @@
   var lastTs = 0;
   var raf = null;
 
+  var loopErrs = 0;
   function loop(ts) {
     var now = ts / 1000;
     var dt = lastTs ? now - lastTs : 0;
     lastTs = now;
     if (dt > 0.05) dt = 0.05;
-    update(dt);
-    render();
+    // A thrown error must never permanently freeze the game: skip the bad
+    // frame, log the first few for diagnosis, and keep the loop alive.
+    try {
+      update(dt);
+      render();
+    } catch (err) {
+      if (loopErrs++ < 5 && window.console && console.error) console.error("Sweep loop error:", err);
+    }
     raf = requestAnimationFrame(loop);
   }
 
@@ -1930,6 +2259,12 @@
     timeLeft = ROUND;
     spawnClock = 0;
     bonusClock = 0;
+    roachClock = 0;
+    roachDelay = 3.5;
+    roachHintShown = false;
+    spill = null;
+    spillDone = false;
+    mopT = 0;
     comboStreak = 0;
     comboTimer = 0;
     comboMult = 1;
@@ -2060,6 +2395,7 @@
   canvas.addEventListener("pointermove", onMove);
   canvas.addEventListener("pointerdown", function (e) {
     onMove(e);
+    if (state === STATE_PLAY) tryStomp();
     if (canvas.setPointerCapture) {
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     }
