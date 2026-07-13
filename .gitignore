@@ -5,8 +5,9 @@
 # Ignore all top-level items by default...
 /*
 
-# ...except the live site and this .gitignore file.
+# ...except the live site, the README, and this .gitignore file.
 !/.gitignore
+!/README.md
 !/steadfast-v2/
 
 # Always ignore OS/editor cruft, even inside the site.
