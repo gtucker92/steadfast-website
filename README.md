@@ -27,7 +27,7 @@ The workflow, honestly described:
 3. I test it locally, catch what's wrong, and iterate. This is most of the work.
 4. Commit and push. Netlify builds and deploys.
 
-The commit history is the record of that loop: 18 of the 19 commits are co-authored with Claude, spanning about a month of real changes to a live site.
+The commit history is the record of that loop. Nearly every commit is co-authored with Claude, and they are real changes to a live site rather than a demo.
 
 ### What I've learned running this way
 
