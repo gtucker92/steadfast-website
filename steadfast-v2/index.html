@@ -545,6 +545,64 @@
       border-top: 1px solid rgba(45,27,105,0.08);
     }
 
+    .ba-card { cursor: zoom-in; }
+
+    .ba-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(24,12,60,0.92);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      cursor: zoom-out;
+    }
+
+    .ba-lightbox.open { opacity: 1; pointer-events: auto; }
+
+    .ba-lightbox figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .ba-lightbox img {
+      max-width: min(1100px, 94vw);
+      max-height: 82vh;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    .ba-lightbox figcaption {
+      color: #E6DFF7;
+      font-size: 15px;
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .ba-lightbox-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .ba-lightbox-close:hover { background: rgba(255,255,255,0.26); }
+
     .service-card {
       border: 1px solid rgba(45,27,105,0.1);
       border-radius: 16px;
@@ -2213,42 +2271,42 @@
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-stovetop.webp" type="image/webp">
-        <img src="images/before-after-stovetop.jpg" alt="Before and after photos of a glass stovetop and microwave degreased and polished by Steadfast Cleaning Co. in a Tampa kitchen" width="900" height="900" loading="lazy">
+        <img src="images/before-after-stovetop.jpg" alt="Before and after photos of a glass stovetop and microwave degreased and polished by Steadfast Cleaning Co. in a Tampa kitchen" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Stovetop and microwave, degreased and polished</figcaption>
     </figure>
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-bathtub.webp" type="image/webp">
-        <img src="images/before-after-bathtub.jpg" alt="Before and after photos of a bathtub scrubbed and restored by Steadfast Cleaning Co. house cleaners in Tampa Bay" width="900" height="900" loading="lazy">
+        <img src="images/before-after-bathtub.jpg" alt="Before and after photos of a bathtub scrubbed and restored by Steadfast Cleaning Co. house cleaners in Tampa Bay" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Bathtub reset, no residue left behind</figcaption>
     </figure>
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-vanity.webp" type="image/webp">
-        <img src="images/before-after-vanity.jpg" alt="Before and after photos of a marble bathroom vanity polished by Steadfast Cleaning Co. in a Tampa Bay home" width="900" height="900" loading="lazy">
+        <img src="images/before-after-vanity.jpg" alt="Before and after photos of a marble bathroom vanity polished by Steadfast Cleaning Co. in a Tampa Bay home" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Bathroom vanity, polished to the edges</figcaption>
     </figure>
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-fridge.webp" type="image/webp">
-        <img src="images/before-after-fridge.jpg" alt="Before and after photos of a refrigerator interior cleaned during a Steadfast Cleaning Co. move-out clean in Tampa" width="900" height="900" loading="lazy">
+        <img src="images/before-after-fridge.jpg" alt="Before and after photos of a refrigerator interior cleaned during a Steadfast Cleaning Co. move-out clean in Tampa" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Fridge interior, part of Move-In / Move-Out</figcaption>
     </figure>
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-under-sink.webp" type="image/webp">
-        <img src="images/before-after-under-sink.jpg" alt="Before and after photos of an under-sink cabinet cleaned by Steadfast Cleaning Co. in Tampa Bay" width="900" height="900" loading="lazy">
+        <img src="images/before-after-under-sink.jpg" alt="Before and after photos of an under-sink cabinet cleaned by Steadfast Cleaning Co. in Tampa Bay" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Under the sink, where messes hide</figcaption>
     </figure>
     <figure class="ba-card">
       <picture>
         <source srcset="images/before-after-oven.webp" type="image/webp">
-        <img src="images/before-after-oven.jpg" alt="Before and after photos of an oven interior deep cleaned by Steadfast Cleaning Co. in a Tampa home" width="900" height="900" loading="lazy">
+        <img src="images/before-after-oven.jpg" alt="Before and after photos of an oven interior deep cleaned by Steadfast Cleaning Co. in a Tampa home" width="1200" height="1200" loading="lazy">
       </picture>
       <figcaption>Oven detail, included in every Deep Clean</figcaption>
     </figure>
@@ -2852,6 +2910,42 @@
       observer.observe(el);
     });
   }
+
+  // Before/after lightbox
+  (function () {
+    var lb = document.createElement('div');
+    lb.className = 'ba-lightbox';
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.setAttribute('aria-label', 'Enlarged before and after photo');
+    lb.innerHTML = '<button class="ba-lightbox-close" aria-label="Close photo">&times;</button><figure><img alt=""><figcaption></figcaption></figure>';
+    document.body.appendChild(lb);
+    var lbImg = lb.querySelector('img');
+    var lbCap = lb.querySelector('figcaption');
+    function closeLb() {
+      lb.classList.remove('open');
+      document.body.style.overflow = 'auto';
+    }
+    lb.addEventListener('click', closeLb);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLb(); });
+    document.querySelectorAll('.ba-card').forEach(function (card) {
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', 'Enlarge photo: ' + card.querySelector('figcaption').textContent);
+      function openLb() {
+        var img = card.querySelector('img');
+        lbImg.src = img.currentSrc || img.src;
+        lbImg.alt = img.alt;
+        lbCap.textContent = card.querySelector('figcaption').textContent;
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      card.addEventListener('click', openLb);
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLb(); }
+      });
+    });
+  })();
 </script>
 </div>
 
