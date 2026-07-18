@@ -507,6 +507,44 @@
       gap: 24px;
     }
 
+    .ba-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .ba-card {
+      margin: 0;
+      border: 1px solid rgba(45,27,105,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(45,27,105,0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .ba-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(45,27,105,0.12);
+    }
+
+    .ba-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .ba-card figcaption {
+      padding: 14px 18px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--purple-dark);
+      border-top: 1px solid rgba(45,27,105,0.08);
+    }
+
     .service-card {
       border: 1px solid rgba(45,27,105,0.1);
       border-radius: 16px;
@@ -1067,6 +1105,15 @@
       .section-header { flex-direction: column; align-items: flex-start; gap: 16px; }
       .section-title { font-size: 30px; }
       .services-grid { grid-template-columns: 1fr; }
+      .ba-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 16px;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .ba-card { flex: 0 0 80%; scroll-snap-align: center; }
       .why-section { padding: 60px 24px; }
       .why-inner { grid-template-columns: 1fr; gap: 40px; }
       .why-visual { display: none; }
@@ -2149,6 +2196,65 @@
   </div>
 </div>
 
+<!-- BEFORE & AFTER -->
+<div class="section" id="before-after">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Real Results</div>
+      <h2 class="section-title">Before &amp; After,<br>Straight From Our Jobs</h2>
+      <p class="section-subtitle">Not stock photos. These are real Tampa Bay homes, photographed on the job by our team.</p>
+    </div>
+    <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" target="_blank" rel="noopener" class="btn-secondary" style="white-space:nowrap;color:var(--purple-mid);">
+      More on Google
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="ba-grid">
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-window-sill.webp" type="image/webp">
+        <img src="images/before-after-window-sill.jpg" alt="Before and after photos of a tile floor and window area cleaned by Steadfast Cleaning Co. in a Tampa home" width="900" height="1125" loading="lazy">
+      </picture>
+      <figcaption>Window sills, tracks &amp; tile</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-bathtub.webp" type="image/webp">
+        <img src="images/before-after-bathtub.jpg" alt="Before and after photos of a bathtub scrubbed and restored by Steadfast Cleaning Co. house cleaners in Tampa Bay" width="900" height="900" loading="lazy">
+      </picture>
+      <figcaption>Bathtub reset, no residue left behind</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-vanity.webp" type="image/webp">
+        <img src="images/before-after-vanity.jpg" alt="Before and after photos of a marble bathroom vanity polished by Steadfast Cleaning Co. in a Tampa Bay home" width="900" height="900" loading="lazy">
+      </picture>
+      <figcaption>Bathroom vanity, polished to the edges</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-fridge.webp" type="image/webp">
+        <img src="images/before-after-fridge.jpg" alt="Before and after photos of a refrigerator interior cleaned during a Steadfast Cleaning Co. move-out clean in Tampa" width="900" height="900" loading="lazy">
+      </picture>
+      <figcaption>Fridge interior, part of Move-In / Move-Out</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-under-sink.webp" type="image/webp">
+        <img src="images/before-after-under-sink.jpg" alt="Before and after photos of an under-sink cabinet cleaned by Steadfast Cleaning Co. in Tampa Bay" width="900" height="900" loading="lazy">
+      </picture>
+      <figcaption>Under the sink, where messes hide</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-oven.webp" type="image/webp">
+        <img src="images/before-after-oven.jpg" alt="Before and after photos of an oven interior deep cleaned by Steadfast Cleaning Co. in a Tampa home" width="900" height="900" loading="lazy">
+      </picture>
+      <figcaption>Oven detail, included in every Deep Clean</figcaption>
+    </figure>
+  </div>
+</div>
+
 <!-- WHY STEADFAST -->
 <section class="why-section">
   <div class="why-inner">
@@ -2739,7 +2845,7 @@
   }, { threshold: 0.1 });
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.querySelectorAll('.service-card, .why-point, .area-chip').forEach(el => {
+    document.querySelectorAll('.service-card, .ba-card, .why-point, .area-chip').forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(20px)';
       el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
