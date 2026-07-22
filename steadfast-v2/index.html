@@ -1372,11 +1372,8 @@
 
     #estimate { scroll-margin-top: 140px; }
 
-    .step-question { scroll-margin-top: 110px; }
-
     @media (max-width: 768px) {
       #estimate { scroll-margin-top: 165px; }
-      .step-question { scroll-margin-top: 130px; }
     }
   </style>
 <script type="application/ld+json">
@@ -3205,10 +3202,16 @@ document.addEventListener('click', (e) => {
       else if (i + 1 === n) dot.classList.add('active');
     });
     currentStep = n;
-    const q = activeStep.querySelector('.step-question');
-    if (q) {
+    const est = document.querySelector('.estimator');
+    if (est) {
+      let offset = 16;
+      const nav = document.querySelector('nav');
+      if (nav) offset += nav.getBoundingClientRect().height;
+      const banner = document.getElementById('offer-banner');
+      if (banner && !banner.classList.contains('dismissed')) offset += banner.getBoundingClientRect().height;
+      est.style.scrollMarginTop = Math.ceil(offset) + 'px';
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      q.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      est.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
     }
   }
 
