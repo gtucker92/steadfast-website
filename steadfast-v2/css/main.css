@@ -786,6 +786,89 @@ footer {
     .result-card.quote-request #est-result-note,
     .result-card.quote-request #est-breakdown { display: none; }
 .result-card.quote-request #est-quote-request { display: block; }
+.est-lead-form { display: none; text-align: left; }
+.result-card.lead-capture #est-result-actions { display: none; }
+.result-card.lead-capture .est-lead-form { display: block; }
+.result-card.confirmed .est-lead-form,
+    .result-card.confirmed #est-quote-request { display: none; }
+.result-card.quote-request.lead-capture #est-quote-request { display: none; }
+.est-lead-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      margin-bottom: 6px;
+    }
+.est-lead-sub {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+.est-lead-field { margin-bottom: 14px; }
+.est-lead-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--purple-dark);
+      margin-bottom: 6px;
+    }
+.est-lead-field input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid rgba(45,27,105,0.15);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text-dark);
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+.est-lead-field input:focus {
+      border-color: var(--purple-mid);
+      box-shadow: 0 0 0 3px rgba(123,79,190,0.12);
+    }
+.est-lead-form .btn-book { width: 100%; margin-top: 4px; }
+.est-lead-form .btn-book:disabled { opacity: 0.7; cursor: default; transform: none; }
+.est-lead-error {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 18px;
+      background: #FDF2F2;
+      border: 1px solid #E8B4B4;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #9B2C2C;
+      text-align: center;
+      line-height: 1.6;
+    }
+.est-lead-error a { color: #9B2C2C; font-weight: 600; }
+.est-lead-alt {
+      font-size: 13px;
+      color: var(--text-mid);
+      text-align: center;
+      margin-top: 14px;
+    }
+.est-lead-alt + .est-lead-alt { margin-top: 6px; }
+.est-lead-alt a {
+      color: var(--purple-mid);
+      font-weight: 600;
+      text-decoration: none;
+    }
+.est-lead-alt a:hover { color: var(--purple-dark); }
+.est-lead-linkbtn {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--purple-mid);
+      font-weight: 600;
+      cursor: pointer;
+    }
+.est-lead-linkbtn:hover { color: var(--purple-dark); }
 
 @media (max-width: 900px) {
   .estimator-section { padding: 40px 20px; }
@@ -806,3 +889,24 @@ footer {
 
 /* Footer "All of Tampa Bay" anchor lands below the sticky nav */
 #where-we-clean { scroll-margin-top: 100px; }
+
+/* Keyboard focus */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--purple-mid, #7B4FBE);
+  outline-offset: 2px;
+}
+
+/* Dark-surface sections need a light ring for contrast */
+.cta-banner a:focus-visible,
+.local-section a:focus-visible,
+.trust-bar a:focus-visible,
+footer a:focus-visible,
+.hero-right a:focus-visible {
+  outline-color: #FFFFFF;
+}

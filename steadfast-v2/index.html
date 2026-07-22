@@ -187,7 +187,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/main.css?v=3">
+<link rel="stylesheet" href="/css/main.css?v=5">
   <style>
     :root {
       --purple-dark: #2D1B69;
@@ -1930,7 +1930,7 @@
     <div class="hero-right-inner">
       <div class="hiw-eyebrow">How It Works</div>
 
-      <h2 class="hiw-title">From <em>first call</em> to spotless home.</h2>
+      <h2 class="hiw-title">From first call to spotless home.</h2>
 
       <p class="hiw-sub">No surprises, no call centers, no rotating cleaners. Three simple steps, every time.</p>
 
@@ -1939,7 +1939,7 @@
         <div class="hiw-step">
           <div class="hiw-step-number">01</div>
           <div class="hiw-step-content">
-            <h3 class="hiw-step-title">Free <em>walk-through.</em></h3>
+            <h3 class="hiw-step-title">Free walk-through.</h3>
             <p class="hiw-step-body">We visit your home, learn your preferences, and give you a flat-rate estimate. No pressure, no obligation.</p>
           </div>
         </div>
@@ -1947,7 +1947,7 @@
         <div class="hiw-step">
           <div class="hiw-step-number">02</div>
           <div class="hiw-step-content">
-            <h3 class="hiw-step-title">Your <em>team</em> arrives.</h3>
+            <h3 class="hiw-step-title">Your team arrives.</h3>
             <p class="hiw-step-body">Same trained, background-checked pros every visit. They know your home, your standards, and your schedule.</p>
           </div>
         </div>
@@ -1955,7 +1955,7 @@
         <div class="hiw-step">
           <div class="hiw-step-number">03</div>
           <div class="hiw-step-content">
-            <h3 class="hiw-step-title">24-hour <em>promise.</em></h3>
+            <h3 class="hiw-step-title">24-hour promise.</h3>
             <p class="hiw-step-body">Not happy with something? We return within 24 hours and make it right. No questions asked, ever.</p>
           </div>
         </div>
@@ -2059,8 +2059,8 @@
           <button class="opt" data-service="postconstruction"><span class="opt-title">Post-Construction</span><span class="opt-sub">Drywall dust, paint, debris</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back" disabled>← Back</button>
-          <button class="btn-next" id="est-next-1" disabled>Continue →</button>
+          <button class="btn-back" disabled>Back</button>
+          <button class="btn-next" id="est-next-1" disabled>Continue</button>
         </div>
       </div>
 
@@ -2098,8 +2098,8 @@
           </div>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-2" disabled>Continue →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-2" disabled>Continue</button>
         </div>
       </div>
 
@@ -2113,8 +2113,8 @@
           <button class="opt" data-bath="4"><span class="opt-title">4+</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-3" disabled>Continue →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-3" disabled>Continue</button>
         </div>
       </div>
 
@@ -2127,8 +2127,8 @@
           <button class="opt" data-freq="monthly"><span class="opt-title">Monthly</span><span class="opt-sub">Light maintenance, +$20 / visit</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-4" disabled>See estimate →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-4" disabled>See estimate</button>
         </div>
       </div>
 
@@ -2166,8 +2166,35 @@
         </div>
 
         <div class="result-actions" id="est-result-actions">
-          <button class="btn-book" id="est-book-btn">Continue to Contact Info →</button>
+          <button class="btn-book" id="est-book-btn">Lock In My Estimate</button>
           <button class="btn-restart" id="est-restart-btn">Start Over</button>
+        </div>
+
+        <div class="est-lead-form" id="est-lead-form">
+          <h3 class="est-lead-title" id="est-lead-title">Lock in your estimate</h3>
+          <p class="est-lead-sub" id="est-lead-sub">Share your info and we'll confirm your price at a free walk-through.</p>
+          <form id="est-lead-capture">
+            <div class="est-lead-field">
+              <label for="est-lead-name">Your Name</label>
+              <input type="text" id="est-lead-name" name="name" placeholder="Jane Smith" autocomplete="name" required>
+            </div>
+            <div class="est-lead-field">
+              <label for="est-lead-phone">Phone Number</label>
+              <input type="tel" id="est-lead-phone" name="phone" placeholder="(813) 555-0000" autocomplete="tel" required>
+            </div>
+            <div class="est-lead-field">
+              <label for="est-lead-email">Email (optional)</label>
+              <input type="email" id="est-lead-email" name="email" placeholder="jane@email.com" autocomplete="email">
+            </div>
+            <button type="submit" class="btn-book" id="est-lead-submit">Send My Info</button>
+            <div class="est-lead-error" id="est-lead-error" role="alert">
+              Something went wrong sending your request. Please call or text us at
+              <a href="tel:+18133300225">(813) 330-0225</a>, or
+              <a href="contact.html" id="est-lead-error-link">continue on our contact page</a>.
+            </div>
+            <p class="est-lead-alt">Prefer the full form? <a href="contact.html" id="est-full-form-link">Continue to our contact page</a></p>
+            <p class="est-lead-alt"><button type="button" class="est-lead-linkbtn" id="est-lead-restart">Start over</button></p>
+          </form>
         </div>
 
         <div class="confirmation" id="est-confirmation">
@@ -2176,9 +2203,9 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </div>
-          <h3 class="confirmation-title">One more step.</h3>
-          <p class="confirmation-body">Now we just need your contact info so we can confirm the details and schedule your free walk-through. Redirecting you now.</p>
-          <p class="confirmation-meta">Not redirecting? Click <a href="/contact" id="est-fallback-link">here to continue</a>.</p>
+          <h3 class="confirmation-title">You're all set.</h3>
+          <p class="confirmation-body">We'll reach out within 24 hours to confirm details and schedule your free walk-through.</p>
+          <p class="confirmation-meta"><button type="button" class="est-lead-linkbtn" id="est-confirm-restart-btn">Start another estimate</button></p>
         </div>
       </div>
 
@@ -2217,7 +2244,7 @@
       </div>
       <div class="service-name">First Clean Included</div>
       <p class="service-desc">Every recurring client starts with a thorough Deep Clean: baseboards, vents, light fixtures, ceiling fans, appliance exteriors, and detailed bathroom scrubbing. Built into your first visit, no separate booking required.</p>
-      <p class="service-price"><a href="/services#deep-cleaning" style="color: var(--purple-mid); text-decoration: none; font-weight: 600;">Learn more &rarr;</a></p>
+      <p class="service-price"><a href="/services#deep-cleaning" style="color: var(--purple-mid); text-decoration: none; font-weight: 600;">Learn more</a></p>
     </div>
     <div class="service-card">
       <div class="service-icon-wrap">
@@ -2483,26 +2510,26 @@
       </article>
     </div>
     <div class="testimonials-footer">
-      <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="testimonials-link" target="_blank" rel="noopener">See all reviews on Google →</a>
+      <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="testimonials-link" target="_blank" rel="noopener">See all reviews on Google</a>
     </div>
   </div>
 </section>
 
 <style>
   .stf-faq {
-    --stf-purple: #6B46A8;
-    --stf-purple-deep: #4A2E7A;
-    --stf-ink: #1F1530;
-    --stf-body: #4A4458;
-    --stf-muted: #8A8499;
-    --stf-bg: #FAFAFB;
-    --stf-line: #E8E5ED;
-    --stf-white: #FFFFFF;
+    --stf-purple: var(--purple-mid);
+    --stf-purple-deep: var(--purple-dark);
+    --stf-ink: var(--text-dark);
+    --stf-body: var(--text-mid);
+    --stf-muted: var(--text-light);
+    --stf-bg: var(--off-white);
+    --stf-line: rgba(45,27,105,0.1);
+    --stf-white: var(--white);
 
     background: var(--stf-bg);
-    padding: 5rem 1.5rem;
+    padding: 80px 24px;
     color: var(--stf-ink);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 
   .stf-faq__inner {
@@ -2512,31 +2539,31 @@
 
   .stf-faq__header {
     text-align: center;
-    margin-bottom: 3.5rem;
+    margin-bottom: 48px;
   }
 
   .stf-faq__eyebrow {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--stf-purple);
-    text-transform: none;
-    letter-spacing: 0;
-    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin: 0 0 16px 0;
     display: inline-block;
   }
 
   .stf-faq__heading {
-    font-size: clamp(1.875rem, 4vw, 2.5rem);
-    line-height: 1.2;
-    color: var(--stf-ink);
-    margin: 0 0 1.25rem 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    line-height: 1.15;
+    color: var(--purple-dark);
+    margin: 0 0 20px 0;
     font-weight: 700;
-    letter-spacing: -0.02em;
   }
 
   .stf-faq__intro {
-    font-size: 1.0625rem;
-    line-height: 1.65;
+    font-size: 17px;
+    line-height: 1.7;
     color: var(--stf-body);
     margin: 0 auto;
     max-width: 640px;
@@ -2545,7 +2572,7 @@
   .stf-faq__list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
   }
 
   .stf-faq__item {
@@ -2557,23 +2584,23 @@
   }
 
   .stf-faq__item:hover {
-    border-color: #D4CCE0;
+    border-color: var(--purple-light);
   }
 
   .stf-faq__item[open] {
     border-color: var(--stf-purple);
-    box-shadow: 0 4px 16px rgba(107, 70, 168, 0.08);
+    box-shadow: 0 4px 16px rgba(45, 27, 105, 0.08);
   }
 
   .stf-faq__item summary {
     cursor: pointer;
     list-style: none;
-    padding: 1.5rem 1.75rem;
+    padding: 24px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
-    font-size: 1.0625rem;
+    gap: 24px;
+    font-size: 16px;
     line-height: 1.4;
     color: var(--stf-ink);
     font-weight: 600;
@@ -2593,7 +2620,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #F4EFFA;
+    background: var(--purple-pale);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2635,9 +2662,9 @@
   }
 
   .stf-faq__answer {
-    padding: 0 1.75rem 1.75rem 1.75rem;
-    font-size: 1rem;
-    line-height: 1.7;
+    padding: 0 28px 28px 28px;
+    font-size: 15px;
+    line-height: 1.65;
     color: var(--stf-body);
   }
 
@@ -2652,40 +2679,41 @@
   }
 
   .stf-faq__bottom {
-    margin-top: 3rem;
+    margin-top: 48px;
     text-align: center;
-    padding: 2rem 1.5rem;
+    padding: 32px 24px;
   }
 
   .stf-faq__bottom-text {
-    font-size: 1.0625rem;
+    font-size: 16px;
     color: var(--stf-body);
-    margin: 0 0 1.25rem 0;
+    margin: 0 0 20px 0;
   }
 
   .stf-faq__bottom-cta {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: var(--stf-purple);
+    gap: 8px;
+    background: var(--purple-dark);
     color: var(--stf-white);
     text-decoration: none;
-    padding: 0.875rem 1.75rem;
-    border-radius: 8px;
+    padding: 15px 32px;
+    border-radius: 6px;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 15px;
     transition: background 0.2s ease, transform 0.2s ease;
   }
 
   .stf-faq__bottom-cta:hover {
-    background: var(--stf-purple-deep);
+    background: var(--purple-mid);
     transform: translateY(-1px);
   }
 
-  @media (max-width: 640px) {
-    .stf-faq { padding: 3.5rem 1rem; }
-    .stf-faq__item summary { padding: 1.25rem 1.25rem; font-size: 1rem; gap: 1rem; }
-    .stf-faq__answer { padding: 0 1.25rem 1.5rem 1.25rem; }
+  @media (max-width: 768px) {
+    .stf-faq { padding: 60px 24px; }
+    .stf-faq__heading { font-size: 30px; }
+    .stf-faq__item summary { padding: 20px 20px; font-size: 15px; gap: 16px; }
+    .stf-faq__answer { padding: 0 20px 24px 20px; }
   }
 </style>
 
@@ -2826,7 +2854,7 @@
 
     <div class="stf-faq__bottom">
       <p class="stf-faq__bottom-text">Don't see your question? Text or call us directly. You'll get a real answer from the people doing the work.</p>
-      <a href="tel:+18133300225" class="stf-faq__bottom-cta">✆ (813) 330-0225</a>
+      <a href="tel:+18133300225" class="stf-faq__bottom-cta">(813) 330-0225</a>
     </div>
 
   </div>
@@ -2838,7 +2866,7 @@
   <p>Call or text us to schedule your first cleaning in South Tampa, Westchase, Carrollwood, Brandon, Riverview, St. Petersburg, Clearwater, Lutz, Wesley Chapel, Odessa, or anywhere across Tampa Bay.</p>
   <div class="cta-actions">
     <a href="#estimate" class="btn-white">Get a Free Estimate</a>
-    <a href="tel:+18133300225" class="btn-outline-white">&#9990; (813) 330-0225</a>
+    <a href="tel:+18133300225" class="btn-outline-white">(813) 330-0225</a>
   </div>
 </section>
 
@@ -3026,7 +3054,7 @@ if (sessionStorage.getItem('introSeen') || window.matchMedia('(prefers-reduced-m
     document.body.style.overflow = 'auto';
   }
 } else {
-  setTimeout(doExit, 2800);
+  setTimeout(doExit, 2300);
   document.getElementById('intro')?.addEventListener('click', doExit);
 }
 
@@ -3164,7 +3192,7 @@ document.addEventListener('click', (e) => {
     const track = document.querySelector('.step-track');
     if (track) track.classList.toggle('three-step', !isFourStep);
     const next3 = document.getElementById('est-next-3');
-    if (next3) next3.textContent = isFourStep ? 'Continue →' : 'See estimate →';
+    if (next3) next3.textContent = isFourStep ? 'Continue' : 'See estimate';
   }
 
   function showStep(n) {
@@ -3246,12 +3274,12 @@ document.addEventListener('click', (e) => {
 
     if (isQuoteRequest) {
       $('#est-result').classList.add('quote-request');
-      $('#est-book-btn').textContent = 'Continue to Contact Info →';
+      $('#est-book-btn').textContent = 'Request My Custom Quote';
       return;
     }
 
     $('#est-result').classList.remove('quote-request');
-    $('#est-book-btn').textContent = 'Continue to Contact Info →';
+    $('#est-book-btn').textContent = 'Lock In My Estimate';
 
     const { price, cadence, breakdown } = calculatePrice();
     $('#est-price-num').textContent = price;
@@ -3273,12 +3301,16 @@ document.addEventListener('click', (e) => {
     state.service = null; state.bed = null; state.bath = null; state.freq = null;
     $$('.opt').forEach(o => o.classList.remove('selected'));
     $$('.btn-next').forEach(b => b.disabled = true);
-    $('#est-result').classList.remove('active', 'confirmed', 'quote-request');
+    $('#est-result').classList.remove('active', 'confirmed', 'quote-request', 'lead-capture');
     $('#est-confirmation').classList.remove('active');
     $('#est-pre-result').style.display = 'block';
-    $('#est-book-btn').textContent = 'Continue to Contact Info →';
-    const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
-    if (confirmTitle) confirmTitle.textContent = 'One more step.';
+    $('#est-book-btn').textContent = 'Lock In My Estimate';
+    const leadForm = $('#est-lead-capture');
+    if (leadForm) leadForm.reset();
+    const leadError = $('#est-lead-error');
+    if (leadError) leadError.style.display = 'none';
+    const leadSubmit = $('#est-lead-submit');
+    if (leadSubmit) { leadSubmit.disabled = false; leadSubmit.textContent = 'Send My Info'; }
     updateSummary();
     updateStepCount();
     showStep(1);
@@ -3286,30 +3318,75 @@ document.addEventListener('click', (e) => {
 
   if ($('#est-restart-btn')) $('#est-restart-btn').addEventListener('click', resetEstimator);
   if ($('#est-confirm-restart-btn')) $('#est-confirm-restart-btn').addEventListener('click', resetEstimator);
+  if ($('#est-lead-restart')) $('#est-lead-restart').addEventListener('click', resetEstimator);
 
-  if ($('#est-book-btn')) $('#est-book-btn').addEventListener('click', () => {
+  function buildContactParams() {
     const isQuoteRequest = state.bed === '5';
-    const params = new URLSearchParams({
+    return new URLSearchParams({
       'calc-origin-service': SERVICE_LABELS[state.service] || '',
       bed: state.bed || '',
       bath: state.bath || '',
       freq: state.service === 'recurring' ? (FREQ_LABELS[state.freq] || '') : '',
       estimate: isQuoteRequest ? '' : $('#est-price-num').textContent
     });
+  }
 
-    const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
-    if (confirmTitle) confirmTitle.textContent = 'One more step.';
+  if ($('#est-book-btn')) $('#est-book-btn').addEventListener('click', () => {
+    const isQuoteRequest = state.bed === '5';
+    const contactUrl = 'contact.html?' + buildContactParams().toString();
 
-    $('#est-result').classList.add('confirmed');
-    $('#est-confirmation').classList.add('active');
-    $('#est-confirmation').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const fullLink = $('#est-full-form-link');
+    if (fullLink) fullLink.href = contactUrl;
+    const errLink = $('#est-lead-error-link');
+    if (errLink) errLink.href = contactUrl;
 
-    const fallback = $('#est-fallback-link');
-    if (fallback) fallback.href = 'contact.html?' + params.toString();
+    $('#est-lead-title').textContent = isQuoteRequest ? 'Request your custom quote' : 'Lock in your estimate';
+    $('#est-lead-sub').textContent = isQuoteRequest
+      ? "Share your info and we'll reach out to schedule your free walk-through."
+      : "Share your info and we'll confirm your price at a free walk-through.";
 
-    setTimeout(() => {
-      window.location.href = 'contact.html?' + params.toString();
-    }, 1500);
+    $('#est-result').classList.add('lead-capture');
+    $('#est-lead-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    $('#est-lead-name').focus({ preventScroll: true });
+  });
+
+  if ($('#est-lead-capture')) $('#est-lead-capture').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#est-lead-submit');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    $('#est-lead-error').style.display = 'none';
+
+    const isQuoteRequest = state.bed === '5';
+    const body = new URLSearchParams({
+      'form-name': 'contact',
+      'name': $('#est-lead-name').value.trim(),
+      'phone': $('#est-lead-phone').value.trim(),
+      'email': $('#est-lead-email').value.trim(),
+      'calc-origin-service': SERVICE_LABELS[state.service] || '',
+      'estimate-bedrooms': state.bed || '',
+      'estimate-bathrooms': state.bath || '',
+      'estimate-frequency': state.service === 'recurring' ? (FREQ_LABELS[state.freq] || '') : '',
+      'estimate-amount': isQuoteRequest ? '' : $('#est-price-num').textContent,
+      'lead-source': 'calculator'
+    });
+
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+      if (!res.ok) throw new Error('Status ' + res.status);
+      $('#est-result').classList.remove('lead-capture');
+      $('#est-result').classList.add('confirmed');
+      $('#est-confirmation').classList.add('active');
+      $('#est-confirmation').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (err) {
+      $('#est-lead-error').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send My Info';
+    }
   });
 })();
 </script>
