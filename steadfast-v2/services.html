@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/main.css?v=3">
+  <link rel="stylesheet" href="/css/main.css?v=4">
   <style>
     :root {
       --purple-dark: #2D1B69;
@@ -866,8 +866,8 @@
           <button class="opt" data-service="postconstruction"><span class="opt-title">Post-Construction</span><span class="opt-sub">Drywall dust, paint, debris</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back" disabled>← Back</button>
-          <button class="btn-next" id="est-next-1" disabled>Continue →</button>
+          <button class="btn-back" disabled>Back</button>
+          <button class="btn-next" id="est-next-1" disabled>Continue</button>
         </div>
       </div>
 
@@ -905,8 +905,8 @@
           </div>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-2" disabled>Continue →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-2" disabled>Continue</button>
         </div>
       </div>
 
@@ -920,8 +920,8 @@
           <button class="opt" data-bath="4"><span class="opt-title">4+</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-3" disabled>Continue →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-3" disabled>Continue</button>
         </div>
       </div>
 
@@ -934,8 +934,8 @@
           <button class="opt" data-freq="monthly"><span class="opt-title">Monthly</span><span class="opt-sub">Light maintenance, +$20 / visit</span></button>
         </div>
         <div class="form-nav">
-          <button class="btn-back">← Back</button>
-          <button class="btn-next" id="est-next-4" disabled>See estimate →</button>
+          <button class="btn-back">Back</button>
+          <button class="btn-next" id="est-next-4" disabled>See estimate</button>
         </div>
       </div>
 
@@ -973,7 +973,7 @@
         </div>
 
         <div class="result-actions" id="est-result-actions">
-          <button class="btn-book" id="est-book-btn">Continue to Contact Info →</button>
+          <button class="btn-book" id="est-book-btn">Continue to Contact Info</button>
           <button class="btn-restart" id="est-restart-btn">Start Over</button>
         </div>
 
@@ -1041,7 +1041,7 @@
       <strong>First visit is a Deep Clean, priced at 1.5x to 2x your recurring rate. Subsequent visits are at the regular recurring rate.</strong><br>
       Weekly service receives a 10% discount &bull; Monthly service is standard rate + $20.
     </div>
-    <button class="checklist-toggle-btn" id="checklist-btn" onclick="toggleChecklist()">See exactly what we clean &rarr;</button>
+    <button class="checklist-toggle-btn" id="checklist-btn" onclick="toggleChecklist()">See exactly what we clean</button>
     <div class="checklist-wrap" id="checklist-wrap">
       <div class="checklist-grid">
         <div class="checklist-col">
@@ -1230,7 +1230,7 @@
       </article>
     </div>
     <div class="testimonials-footer">
-      <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="testimonials-link" target="_blank" rel="noopener">See all reviews on Google →</a>
+      <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="testimonials-link" target="_blank" rel="noopener">See all reviews on Google</a>
     </div>
   </div>
 </section>
@@ -1240,7 +1240,7 @@
   <p>Call or text us to schedule your first cleaning today.</p>
   <div class="cta-actions">
     <a href="#estimate" class="btn-white">Get a Free Estimate</a>
-    <a href="tel:+18133300225" class="btn-outline-white">&#9990; (813) 330-0225</a>
+    <a href="tel:+18133300225" class="btn-outline-white">(813) 330-0225</a>
   </div>
 </section>
 
@@ -1297,7 +1297,7 @@ function toggleChecklist() {
   const wrap = document.getElementById('checklist-wrap');
   const btn  = document.getElementById('checklist-btn');
   const isOpen = wrap.classList.toggle('open');
-  btn.textContent = isOpen ? 'Hide checklist ↑' : 'See exactly what we clean →';
+  btn.textContent = isOpen ? 'Hide checklist' : 'See exactly what we clean';
 }
 
 const burger = document.getElementById('nav-burger');
@@ -1418,7 +1418,7 @@ document.addEventListener('click', (e) => {
     const track = document.querySelector('.step-track');
     if (track) track.classList.toggle('three-step', !isFourStep);
     const next3 = document.getElementById('est-next-3');
-    if (next3) next3.textContent = isFourStep ? 'Continue →' : 'See estimate →';
+    if (next3) next3.textContent = isFourStep ? 'Continue' : 'See estimate';
   }
 
   function showStep(n) {
@@ -1500,12 +1500,12 @@ document.addEventListener('click', (e) => {
 
     if (isQuoteRequest) {
       $('#est-result').classList.add('quote-request');
-      $('#est-book-btn').textContent = 'Continue to Contact Info →';
+      $('#est-book-btn').textContent = 'Continue to Contact Info';
       return;
     }
 
     $('#est-result').classList.remove('quote-request');
-    $('#est-book-btn').textContent = 'Continue to Contact Info →';
+    $('#est-book-btn').textContent = 'Continue to Contact Info';
 
     const { price, cadence, breakdown } = calculatePrice();
     $('#est-price-num').textContent = price;
@@ -1530,7 +1530,7 @@ document.addEventListener('click', (e) => {
     $('#est-result').classList.remove('active', 'confirmed', 'quote-request');
     $('#est-confirmation').classList.remove('active');
     $('#est-pre-result').style.display = 'block';
-    $('#est-book-btn').textContent = 'Continue to Contact Info →';
+    $('#est-book-btn').textContent = 'Continue to Contact Info';
     const confirmTitle = $('#est-confirmation').querySelector('.confirmation-title');
     if (confirmTitle) confirmTitle.textContent = 'One more step.';
     updateSummary();
