@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18345094900"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18345094900');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>House Cleaning in Tampa Bay | Steadfast Cleaning Co.</title>
@@ -3381,6 +3390,9 @@ document.addEventListener('click', (e) => {
         body: body.toString()
       });
       if (!res.ok) throw new Error('Status ' + res.status);
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', {'send_to': 'AW-18345094900/x777CI3WpNUcEPTdz6tE'});
+      }
       $('#est-result').classList.remove('lead-capture');
       $('#est-result').classList.add('confirmed');
       $('#est-confirmation').classList.add('active');
