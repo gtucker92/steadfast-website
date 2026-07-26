@@ -10,6 +10,7 @@
 
   gtag('config', 'AW-18345094900');
 </script>
+<script defer src="/js/conversions.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Get a Free Cleaning Quote | Steadfast Cleaning Co. Tampa</title>
@@ -898,6 +899,9 @@ form.addEventListener('submit', async (e) => {
       body: new URLSearchParams(new FormData(form)).toString()
     });
     if (!res.ok) throw new Error('Status ' + res.status);
+    if (typeof gtag === 'function') {
+      gtag('event', 'conversion', {'send_to': 'AW-18345094900/x777CI3WpNUcEPTdz6tE'});
+    }
     form.style.display = 'none';
     const success = document.getElementById('success-msg');
     success.style.display = 'block';
