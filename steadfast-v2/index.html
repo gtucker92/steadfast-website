@@ -204,6 +204,7 @@
       --purple-mid: #7B4FBE;
       --purple-light: #C4A8E8;
       --purple-pale: #F5F3FF;
+      --cream: #FAF7F2;
       --white: #FFFFFF;
       --off-white: #FAFAFA;
       --text-dark: #1A1A2E;
@@ -300,38 +301,40 @@
       padding: 0 24px 20px;
     }
 
-    /* HERO */
+    /* HERO (arched portrait) */
 
     .hero {
-      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(1000px 500px at 85% 0%, #EDE6F9 0%, transparent 60%),
+        linear-gradient(160deg, var(--cream) 0%, var(--purple-pale) 70%, #EFE9FA 100%);
+      padding: 148px 60px 70px;
+    }
+
+    .hero-inner {
+      max-width: 1280px;
+      margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      padding-top: 0;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 30px;
+      align-items: center;
     }
 
     .hero-left {
-      background: var(--purple-pale);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 40px 60px 80px 80px;
-    }
-
-    .hero-eyebrow {
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--purple-mid);
-      margin-bottom: 20px;
+      gap: 22px;
+      position: relative;
+      z-index: 2;
     }
 
     .hero-title {
       font-family: 'Playfair Display', serif;
-      font-size: 58px;
+      font-size: 60px;
       line-height: 1.1;
       color: var(--purple-dark);
-      margin-bottom: 24px;
       font-weight: 700;
     }
 
@@ -341,27 +344,50 @@
     }
 
     .hero-subtitle {
-      font-size: 17px;
-      line-height: 1.7;
-      color: var(--text-mid);
-      max-width: 440px;
-      margin-bottom: 12px;
+      font-size: 17.5px;
+      line-height: 1.6;
+      color: #4a4462;
+      max-width: 430px;
     }
 
-    .hero-bilingual {
-      font-size: 14px;
-      font-style: italic;
-      color: var(--text-light);
-      max-width: 440px;
-      margin-bottom: 32px;
-    }
+    .hero-subtitle i { color: #6d6788; }
 
     .hero-actions {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       align-items: center;
       flex-wrap: wrap;
+      margin-top: 4px;
     }
+
+    .hero .btn-primary {
+      padding: 16px 30px;
+      border-radius: 10px;
+      font-size: 16.5px;
+      box-shadow: 0 8px 24px rgba(45,27,105,0.35);
+    }
+
+    .btn-call {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--purple-dark);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16.5px;
+      border: 1.5px solid rgba(45,27,105,0.25);
+      padding: 15px 24px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.7);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-call:hover {
+      background: #fff;
+      border-color: rgba(45,27,105,0.45);
+    }
+
+    .btn-call svg { width: 17px; height: 17px; flex-shrink: 0; }
 
     .btn-primary {
       display: inline-block;
@@ -394,41 +420,146 @@
 
     .btn-secondary:hover { gap: 12px; }
 
-    .hero-right {
-      position: relative;
-      overflow: hidden;
-      background: var(--purple-dark);
-    }
+    /* HERO MEDIA: arched portrait, offset arch, floating cards */
 
-    .hero-right-inner {
-      position: absolute;
-      inset: 0;
+    .hero-media {
+      position: relative;
       z-index: 2;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 48px;
     }
 
-    .hero-image-bg {
+    .hero-arch-wrap { position: relative; }
+
+    .hero-arch-back {
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(45,27,105,1) 0%, rgba(123,79,190,0.85) 100%);
-      z-index: 1;
+      top: 22px;
+      left: -26px;
+      width: 100%;
+      height: 100%;
+      border-radius: 220px 220px 20px 20px;
+      background: var(--purple-light);
+      opacity: 0.55;
     }
 
-    .hero-bg-pattern {
+    .hero-arch {
+      position: relative;
+      width: 372px;
+      height: 470px;
+      border-radius: 220px 220px 20px 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(45,27,105,0.28);
+      border: 6px solid #fff;
+    }
+
+    .hero-arch picture,
+    .hero-arch img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-float {
       position: absolute;
-      inset: 0;
-      opacity: 0.08;
-      background-image: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 40px,
-        rgba(255,255,255,0.5) 40px,
-        rgba(255,255,255,0.5) 41px
-      );
-      z-index: 0;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 18px;
+      box-shadow: 0 10px 30px rgba(45,27,105,0.22);
+    }
+
+    .hero-float-rating {
+      right: -46px;
+      top: 54px;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .hero-float-rating .n {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--purple-dark);
+      line-height: 1.1;
+    }
+
+    .hero-float-rating .s {
+      font-size: 12.5px;
+      letter-spacing: 1.5px;
+      color: #f2b01e;
+    }
+
+    .hero-float-rating .u {
+      font-size: 11.5px;
+      color: #6d6788;
+      margin-top: 2px;
+    }
+
+    .hero-float-owner {
+      left: -66px;
+      bottom: -26px;
+      max-width: 240px;
+    }
+
+    .hero-float-owner .t {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 15.5px;
+      color: var(--purple-dark);
+      line-height: 1.45;
+    }
+
+    .hero-float-owner .u {
+      font-size: 12.5px;
+      color: #6d6788;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* HERO RESPONSIVE */
+
+    @media (max-width: 1180px) {
+      .hero { padding: 140px 40px 66px; }
+      .hero-title { font-size: 52px; }
+      .hero-arch { width: 330px; height: 417px; }
+      .hero-float-rating { right: -30px; }
+      .hero-float-owner { left: -40px; }
+    }
+
+    @media (max-width: 1000px) {
+      .hero { padding: 118px 26px 76px; }
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 0;
+        max-width: 560px;
+      }
+      .hero-left { gap: 18px; }
+      .hero-title { font-size: 42px; }
+      .hero-subtitle { max-width: none; }
+      .hero-media { margin-top: 46px; }
+      .hero-arch { width: 300px; height: 384px; }
+      /* Pull the floating cards inboard so they clear a 390px screen */
+      .hero-float-rating { right: -18px; top: 42px; }
+      .hero-float-owner { left: -14px; max-width: 230px; }
+      /* Full-width taps once the buttons can no longer sit side by side */
+      .hero-actions { width: 100%; }
+      .hero .btn-primary,
+      .btn-call {
+        flex: 1 1 100%;
+        font-size: 16px;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero { padding: 112px 18px 72px; }
+      .hero-title { font-size: 38px; }
+      .hero-arch { width: 274px; height: 350px; }
+      .hero-float-owner { left: -10px; max-width: 214px; }
+      .hero-float-rating { right: -10px; }
     }
 
     /* TRUST BAR */
@@ -867,22 +998,6 @@
       color: rgba(255,255,255,0.35);
     }
 
-    .hero-rating {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      margin-top: 16px;
-      margin-bottom: 24px;
-      color: var(--text-mid);
-      transition: color 0.2s;
-    }
-
-    .hero-rating:hover { color: var(--purple-dark); }
-
     .meet-owner-section {
       background: var(--purple-pale);
       padding: 80px 80px;
@@ -945,15 +1060,22 @@
     .hero-trust-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      background: var(--purple-mid);
-      color: white;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 40px;
-      margin-bottom: 14px;
+      gap: 7px;
+      background: #fff;
+      border: 1px solid rgba(123,79,190,0.35);
+      color: var(--purple-dark);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: 999px;
+      width: fit-content;
       letter-spacing: 0.3px;
+    }
+
+    .hero-trust-pill::before {
+      content: '\2713';
+      color: var(--purple-mid);
+      font-weight: 700;
     }
 
     /* SERVICE PRICE (U2) */
@@ -1114,15 +1236,15 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .hero-eyebrow { animation: fadeUp 0.6s ease 0.1s both; }
+    .hero-trust-pill { animation: fadeUp 0.6s ease 0.1s both; }
 
     .hero-title { animation: fadeUp 0.6s ease 0.2s both; }
 
     .hero-subtitle { animation: fadeUp 0.6s ease 0.3s both; }
 
-    .hero-bilingual { animation: fadeUp 0.6s ease 0.35s both; }
-
     .hero-actions { animation: fadeUp 0.6s ease 0.4s both; }
+
+    .hero-media { animation: fadeUp 0.7s ease 0.25s both; }
 
     /* MOBILE RESPONSIVE */
 
@@ -1146,24 +1268,6 @@
         height: 70px;
       }
       .nav-dropdown { top: 70px; }
-      .hero {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-      .hero-left {
-        padding: 90px 24px 48px;
-      }
-      .hero-title { font-size: 38px; }
-      .hero-right {
-        background: var(--purple-dark);
-        min-height: auto;
-      }
-      .hero-right-inner {
-        position: relative;
-        inset: auto;
-        padding: 48px 24px;
-        justify-content: flex-start;
-      }
       .trust-bar { padding: 20px 24px; }
       .trust-bar-inner {
         grid-template-columns: 1fr 1fr;
@@ -1210,7 +1314,37 @@
       .form-row { grid-template-columns: 1fr; }
     }
 
-    /* === HOW IT WORKS: hero right panel === */
+    /* === HOW IT WORKS: full-width section below the hero === */
+
+    .hiw-section {
+      background: var(--purple-dark);
+      background-image: linear-gradient(135deg, rgba(45,27,105,1) 0%, rgba(123,79,190,0.85) 100%);
+      padding: 52px 60px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hiw-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.5) 40px,
+        rgba(255,255,255,0.5) 41px
+      );
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hiw-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
 
     .hiw-eyebrow {
       font-size: 11px;
@@ -1238,6 +1372,8 @@
       color: white;
       font-weight: 700;
       margin-bottom: 12px;
+      /* Same measure the hero panel gave it, so it wraps as it did before */
+      max-width: 540px;
     }
 
     .hiw-title em {
@@ -1250,36 +1386,38 @@
       font-size: 15px;
       color: rgba(255,255,255,0.7);
       line-height: 1.6;
-      margin-bottom: 36px;
+      margin-bottom: 26px;
       max-width: 420px;
     }
 
     .hiw-steps {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 36px;
       position: relative;
-    }
-
-    .hiw-steps::before {
-      content: '';
-      position: absolute;
-      left: 27px;
-      top: 30px;
-      bottom: 30px;
-      width: 1px;
-      background: linear-gradient(180deg,
-        rgba(196, 168, 232, 0.3) 0%,
-        rgba(196, 168, 232, 0.5) 50%,
-        rgba(196, 168, 232, 0.3) 100%);
     }
 
     .hiw-step {
       display: flex;
-      gap: 22px;
-      padding: 18px 0;
+      flex-direction: column;
+      gap: 14px;
+      padding: 0;
       align-items: flex-start;
       position: relative;
     }
+
+    /* Connector bridges each step number to the next one across the grid gap */
+    .hiw-step::after {
+      content: '';
+      position: absolute;
+      left: 70px;
+      right: -64px;
+      top: 28px;
+      height: 1px;
+      background: rgba(196, 168, 232, 0.4);
+    }
+
+    .hiw-step:last-child::after { display: none; }
 
     .hiw-step-number {
       flex-shrink: 0;
@@ -1307,7 +1445,7 @@
       transform: scale(1.05);
     }
 
-    .hiw-step-content { padding-top: 6px; flex: 1; }
+    .hiw-step-content { flex: 1; }
 
     .hiw-step-title {
       font-family: 'Playfair Display', serif;
@@ -1352,6 +1490,36 @@
     .hiw-footer em {
       font-style: italic;
       color: var(--purple-light);
+    }
+
+    @media (max-width: 900px) {
+      .hiw-section { padding: 56px 26px 60px; }
+      .hiw-steps {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      /* Back to the vertical timeline once the steps stack */
+      .hiw-steps::before {
+        content: '';
+        position: absolute;
+        left: 27px;
+        top: 30px;
+        bottom: 30px;
+        width: 1px;
+        background: linear-gradient(180deg,
+          rgba(196, 168, 232, 0.3) 0%,
+          rgba(196, 168, 232, 0.5) 50%,
+          rgba(196, 168, 232, 0.3) 100%);
+      }
+      .hiw-step::after { display: none; }
+      .hiw-step {
+        flex-direction: row;
+        gap: 22px;
+        padding: 18px 0;
+        align-items: flex-start;
+      }
+      .hiw-step-content { padding-top: 6px; }
+      .hiw-sub { margin-bottom: 28px; }
     }
 
     @media (max-width: 768px) {
@@ -1913,63 +2081,80 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-left">
-    <span class="hero-trust-pill">&#10003; Licensed, Bonded &amp; Insured</span>
-    <span class="hero-eyebrow">Tampa Bay's Trusted Home Cleaners</span>
-    <h1 class="hero-title">Generations of Clean,<br><em>One Home</em><br>at a Time.</h1>
-    <p class="hero-subtitle">Professional house cleaning for Tampa Bay homeowners in South Tampa, Westchase, Carrollwood, and beyond. Locally owned and built on reliability.</p>
-    <p class="hero-bilingual">Hablamos Español. Bilingual service available.</p>
-    <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="hero-rating" target="_blank" rel="noopener" aria-label="5.0 out of 5 stars on Google">
-      <span class="hero-rating-stars" aria-hidden="true">★★★★★</span>
-      <span class="hero-rating-text">5.0 on Google</span>
-    </a>
-    <div class="hero-actions">
-      <a href="#estimate" class="btn-primary">Get a Free Estimate</a>
-      <a href="/services" class="btn-secondary">
-        View Services
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <span class="hero-trust-pill">Licensed, Bonded &amp; Insured</span>
+      <h1 class="hero-title">Generations of Clean,<br><em>One Home</em><br>at a Time.</h1>
+      <p class="hero-subtitle">Flat-rate house cleaning across Tampa Bay, from the owner who still cleans homes herself. <i>Hablamos Español.</i></p>
+      <div class="hero-actions">
+        <a href="#estimate" class="btn-primary">Get My Free Estimate</a>
+        <a href="tel:+18133300225" class="btn-call">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.94a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          (813) 330-0225
+        </a>
+      </div>
+    </div>
+    <div class="hero-media">
+      <div class="hero-arch-wrap">
+        <div class="hero-arch-back" aria-hidden="true"></div>
+        <div class="hero-arch">
+          <picture>
+            <source srcset="images/inmarie-hero-arch.webp" type="image/webp">
+            <img src="images/inmarie-hero-arch.jpg" alt="Inmarie, owner of Steadfast Cleaning Co., who still cleans Tampa Bay homes herself" width="345" height="436" fetchpriority="high" decoding="async">
+          </picture>
+        </div>
+        <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" class="hero-float hero-float-rating" target="_blank" rel="noopener" aria-label="5.0 out of 5 stars on Google">
+          <div class="n">5.0</div>
+          <div class="s" aria-hidden="true">★★★★★</div>
+          <div class="u">on Google</div>
+        </a>
+        <div class="hero-float hero-float-owner">
+          <div class="t">"Every home is cleaned the way I would want my own cleaned."</div>
+          <div class="u">Inmarie &middot; Owner</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="hero-right">
-    <div class="hero-bg-pattern"></div>
-    <div class="hero-image-bg"></div>
-    <div class="hero-right-inner">
-      <div class="hiw-eyebrow">How It Works</div>
+</section>
 
-      <h2 class="hiw-title">From first call to spotless home.</h2>
+<!-- HOW IT WORKS -->
+<section class="hiw-section" id="how-it-works">
+  <div class="hiw-pattern" aria-hidden="true"></div>
+  <div class="hiw-inner">
+    <div class="hiw-eyebrow">How It Works</div>
 
-      <p class="hiw-sub">No surprises, no call centers, no rotating cleaners. Three simple steps, every time.</p>
+    <h2 class="hiw-title">From first call to spotless home.</h2>
 
-      <div class="hiw-steps">
+    <p class="hiw-sub">No surprises, no call centers, no rotating cleaners. Three simple steps, every time.</p>
 
-        <div class="hiw-step">
-          <div class="hiw-step-number">01</div>
-          <div class="hiw-step-content">
-            <h3 class="hiw-step-title">Free walk-through.</h3>
-            <p class="hiw-step-body">We visit your home, learn your preferences, and give you a flat-rate estimate. No pressure, no obligation.</p>
-          </div>
+    <div class="hiw-steps">
+
+      <div class="hiw-step">
+        <div class="hiw-step-number">01</div>
+        <div class="hiw-step-content">
+          <h3 class="hiw-step-title">Free walk-through.</h3>
+          <p class="hiw-step-body">We visit your home, learn your preferences, and give you a flat-rate estimate. No pressure, no obligation.</p>
         </div>
+      </div>
 
-        <div class="hiw-step">
-          <div class="hiw-step-number">02</div>
-          <div class="hiw-step-content">
-            <h3 class="hiw-step-title">Your team arrives.</h3>
-            <p class="hiw-step-body">Same trained, background-checked pros every visit. They know your home, your standards, and your schedule.</p>
-          </div>
+      <div class="hiw-step">
+        <div class="hiw-step-number">02</div>
+        <div class="hiw-step-content">
+          <h3 class="hiw-step-title">Your team arrives.</h3>
+          <p class="hiw-step-body">Same trained, background-checked pros every visit. They know your home, your standards, and your schedule.</p>
         </div>
+      </div>
 
-        <div class="hiw-step">
-          <div class="hiw-step-number">03</div>
-          <div class="hiw-step-content">
-            <h3 class="hiw-step-title">24-hour promise.</h3>
-            <p class="hiw-step-body">Not happy with something? We return within 24 hours and make it right. No questions asked, ever.</p>
-          </div>
+      <div class="hiw-step">
+        <div class="hiw-step-number">03</div>
+        <div class="hiw-step-content">
+          <h3 class="hiw-step-title">24-hour promise.</h3>
+          <p class="hiw-step-body">Not happy with something? We return within 24 hours and make it right. No questions asked, ever.</p>
         </div>
-
       </div>
 
     </div>
+
   </div>
 </section>
 
@@ -2000,6 +2185,65 @@
       </div>
       <span class="trust-label">Licensed, Bonded &amp; Insured</span>
     </div>
+  </div>
+</div>
+
+<!-- BEFORE & AFTER -->
+<div class="section" id="before-after">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Real Results</div>
+      <h2 class="section-title">Before &amp; After,<br>Straight From Our Jobs</h2>
+      <p class="section-subtitle">Not stock photos. These are real Tampa Bay homes, photographed on the job by our team.</p>
+    </div>
+    <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" target="_blank" rel="noopener" class="btn-secondary" style="white-space:nowrap;color:var(--purple-mid);">
+      More on Google
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="ba-grid">
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-stovetop.webp" type="image/webp">
+        <img src="images/before-after-stovetop.jpg" alt="Before and after photos of a glass stovetop and microwave degreased and polished by Steadfast Cleaning Co. in a Tampa kitchen" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Stovetop and microwave, degreased and polished</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-bathtub.webp" type="image/webp">
+        <img src="images/before-after-bathtub.jpg" alt="Before and after photos of a bathtub scrubbed and restored by Steadfast Cleaning Co. house cleaners in Tampa Bay" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Bathtub reset, no residue left behind</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-vanity.webp" type="image/webp">
+        <img src="images/before-after-vanity.jpg" alt="Before and after photos of a marble bathroom vanity polished by Steadfast Cleaning Co. in a Tampa Bay home" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Bathroom vanity, polished to the edges</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-fridge.webp" type="image/webp">
+        <img src="images/before-after-fridge.jpg" alt="Before and after photos of a refrigerator interior cleaned during a Steadfast Cleaning Co. move-out clean in Tampa" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Fridge interior, part of Move-In / Move-Out</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-under-sink.webp" type="image/webp">
+        <img src="images/before-after-under-sink.jpg" alt="Before and after photos of an under-sink cabinet cleaned by Steadfast Cleaning Co. in Tampa Bay" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Under the sink, where messes hide</figcaption>
+    </figure>
+    <figure class="ba-card">
+      <picture>
+        <source srcset="images/before-after-oven.webp" type="image/webp">
+        <img src="images/before-after-oven.jpg" alt="Before and after photos of an oven interior deep cleaned by Steadfast Cleaning Co. in a Tampa home" width="1200" height="1200" loading="lazy">
+      </picture>
+      <figcaption>Oven detail, included in every Deep Clean</figcaption>
+    </figure>
   </div>
 </div>
 
@@ -2285,65 +2529,6 @@
       <p class="service-desc">No commitment required. Great for special occasions, guests arriving, or before you list your home.</p>
       <p class="service-price">From $155</p>
     </div>
-  </div>
-</div>
-
-<!-- BEFORE & AFTER -->
-<div class="section" id="before-after">
-  <div class="section-header">
-    <div>
-      <div class="section-label">Real Results</div>
-      <h2 class="section-title">Before &amp; After,<br>Straight From Our Jobs</h2>
-      <p class="section-subtitle">Not stock photos. These are real Tampa Bay homes, photographed on the job by our team.</p>
-    </div>
-    <a href="https://www.google.com/maps/place/Steadfast+Cleaning+Co./@27.9628674,-82.512656,15z/data=!4m8!3m7!1s0x6433416195a5b9a3:0x999554e478a82e29!8m2!3d27.9628674!4d-82.512656!9m1!1b1!16s%2Fg%2F11zbc3hztv" target="_blank" rel="noopener" class="btn-secondary" style="white-space:nowrap;color:var(--purple-mid);">
-      More on Google
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-    </a>
-  </div>
-  <div class="ba-grid">
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-stovetop.webp" type="image/webp">
-        <img src="images/before-after-stovetop.jpg" alt="Before and after photos of a glass stovetop and microwave degreased and polished by Steadfast Cleaning Co. in a Tampa kitchen" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Stovetop and microwave, degreased and polished</figcaption>
-    </figure>
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-bathtub.webp" type="image/webp">
-        <img src="images/before-after-bathtub.jpg" alt="Before and after photos of a bathtub scrubbed and restored by Steadfast Cleaning Co. house cleaners in Tampa Bay" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Bathtub reset, no residue left behind</figcaption>
-    </figure>
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-vanity.webp" type="image/webp">
-        <img src="images/before-after-vanity.jpg" alt="Before and after photos of a marble bathroom vanity polished by Steadfast Cleaning Co. in a Tampa Bay home" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Bathroom vanity, polished to the edges</figcaption>
-    </figure>
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-fridge.webp" type="image/webp">
-        <img src="images/before-after-fridge.jpg" alt="Before and after photos of a refrigerator interior cleaned during a Steadfast Cleaning Co. move-out clean in Tampa" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Fridge interior, part of Move-In / Move-Out</figcaption>
-    </figure>
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-under-sink.webp" type="image/webp">
-        <img src="images/before-after-under-sink.jpg" alt="Before and after photos of an under-sink cabinet cleaned by Steadfast Cleaning Co. in Tampa Bay" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Under the sink, where messes hide</figcaption>
-    </figure>
-    <figure class="ba-card">
-      <picture>
-        <source srcset="images/before-after-oven.webp" type="image/webp">
-        <img src="images/before-after-oven.jpg" alt="Before and after photos of an oven interior deep cleaned by Steadfast Cleaning Co. in a Tampa home" width="1200" height="1200" loading="lazy">
-      </picture>
-      <figcaption>Oven detail, included in every Deep Clean</figcaption>
-    </figure>
   </div>
 </div>
 
@@ -2991,10 +3176,37 @@
    typewriter brand text, iris-wipe exit, click-to-skip
    ============================================================ */
 
+// ── 0. SESSION GATE ──
+// The splash plays once per browser session. Repeat visitors, deep links
+// (any URL with a hash), and reduced-motion users go straight to content.
+// If sessionStorage throws we fail open and skip the splash rather than
+// risk trapping the page behind an overlay.
+function introAlreadySeen() {
+  try { return sessionStorage.getItem('introSeen') === '1'; } catch (e) { return true; }
+}
+function rememberIntroSeen() {
+  try { sessionStorage.setItem('introSeen', '1'); } catch (e) { /* fail open */ }
+}
+
+const skipIntro = introAlreadySeen()
+  || !!window.location.hash
+  || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (skipIntro) {
+  const introEl = document.getElementById('intro');
+  const mainEl  = document.getElementById('main-content');
+  if (introEl) introEl.remove();
+  if (mainEl) mainEl.classList.add('visible');
+  document.body.style.overflow = 'auto';
+}
+// Marked on both paths so a deep-link landing never leads to a splash later
+// in the same session.
+rememberIntroSeen();
+
 // ── 1. SPRAY MIST (25–30 particles, size 2–8px, some streak) ──
 const spray = document.getElementById('spray-particles');
 const sprayCount = 26 + Math.floor(Math.random() * 5);
-for (let i = 0; i < sprayCount; i++) {
+for (let i = 0; spray && i < sprayCount; i++) {
   const dot = document.createElement('div');
   const size = 2 + Math.random() * 6;
   const angleDeg = 175 + Math.random() * 40;
@@ -3023,7 +3235,7 @@ for (let i = 0; i < sprayCount; i++) {
 
 // ── 3. CSS BUBBLES ──
 const bubbleContainer = document.getElementById('bubble-container');
-for (let i = 0; i < 70; i++) {
+for (let i = 0; bubbleContainer && i < 70; i++) {
   const b = document.createElement('div');
   b.className = 'bubble';
   const size = (8 + Math.random() * 20) + 'px';
@@ -3036,8 +3248,8 @@ for (let i = 0; i < 70; i++) {
   bubbleContainer.appendChild(b);
 }
 
-// ── 7. AUTO-DISMISS at 4s + click-anywhere-to-skip ──
-let dismissed = false;
+// ── 7. AUTO-DISMISS at 2.3s + click-anywhere-to-skip ──
+let dismissed = skipIntro;
 function doExit() {
   if (dismissed) return;
   dismissed = true;
@@ -3047,20 +3259,11 @@ function doExit() {
   intro.classList.add('exit');
   main.classList.add('visible');
   document.body.style.overflow = 'auto';
-  sessionStorage.setItem('introSeen', '1');
+  rememberIntroSeen();
   setTimeout(() => { intro.remove(); }, 500);
 }
 
-// Skip animation if already seen this session
-if (sessionStorage.getItem('introSeen') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const intro = document.getElementById('intro');
-  const main = document.getElementById('main-content');
-  if (intro) intro.remove();
-  if (main) {
-    main.classList.add('visible');
-    document.body.style.overflow = 'auto';
-  }
-} else {
+if (!skipIntro) {
   setTimeout(doExit, 2300);
   document.getElementById('intro')?.addEventListener('click', doExit);
 }
